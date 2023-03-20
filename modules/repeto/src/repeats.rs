@@ -3,50 +3,50 @@ use std::ops::Range;
 
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub struct Segment {
-    top: Range<usize>,
-    bottom: Range<usize>,
+    left: Range<usize>,
+    right: Range<usize>,
 }
 
 impl Segment {
     pub fn new(top: Range<usize>, bottom: Range<usize>) -> Self {
         assert_eq!(top.len(), bottom.len());
         assert!(top.start < top.end && top.end <= bottom.start && bottom.start < bottom.end);
-        Self { top, bottom }
+        Self { left: top, right: bottom }
     }
 
     pub fn top(&self) -> &Range<usize> {
-        &self.top
+        &self.left
     }
 
     pub fn bottom(&self) -> &Range<usize> {
-        &self.bottom
+        &self.right
     }
 }
 
 impl From<(Range<usize>, Range<usize>)> for Segment {
     fn from(value: (Range<usize>, Range<usize>)) -> Self {
         Self {
-            top: value.0,
-            bottom: value.1,
+            left: value.0,
+            right: value.1,
         }
     }
 }
 
 #[allow(non_camel_case_types)]
 #[derive(Eq, PartialEq, Hash, Clone, Debug)]
-pub struct dsRNA {
+pub struct InvertedRepeat {
     segments: Vec<Segment>,
     brange: Range<usize>,
 }
 
-impl dsRNA {
+impl InvertedRepeat {
     pub fn new(segments: Vec<Segment>) -> Self {
         assert!(!segments.is_empty());
 
         // Derive the bounding range
-        let (mut start, mut end) = (segments[0].top.start, segments[0].top.end);
+        let (mut start, mut end) = (segments[0].left.start, segments[0].left.end);
         for segment in &segments {
-            for s in [&segment.top, &segment.bottom] {
+            for s in [&segment.left, &segment.right] {
                 start = min(start, s.start);
                 end = max(end, s.end);
             }
@@ -69,8 +69,8 @@ impl dsRNA {
     pub fn blocks(&self) -> Vec<Range<usize>> {
         let mut blocks = Vec::with_capacity(self.segments.len() * 2);
         for segment in &self.segments {
-            blocks.push(segment.top.clone());
-            blocks.push(segment.bottom.clone());
+            blocks.push(segment.left.clone());
+            blocks.push(segment.right.clone());
         }
         blocks
     }

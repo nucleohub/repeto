@@ -1,4 +1,4 @@
-use super::dsRNA;
+use super::InvertedRepeat;
 
 mod dynprog;
 mod index;
@@ -6,7 +6,7 @@ mod trace;
 
 pub type Score = i32;
 
-pub fn run<'a>(dsrna: &'a [dsRNA], scores: &'a [Score]) -> (Score, Vec<&'a dsRNA>) {
+pub fn run<'a>(dsrna: &'a [InvertedRepeat], scores: &'a [Score]) -> (Score, Vec<&'a InvertedRepeat>) {
     assert_eq!(dsrna.len(), scores.len());
 
     // Trivial solutions
@@ -41,7 +41,7 @@ mod tests {
         for (score, segments) in tcase.dsrna {
             scores.push(score);
             let segments = segments.into_iter().map(|x| x.into()).collect();
-            transformed.push(dsRNA::new(segments));
+            transformed.push(InvertedRepeat::new(segments));
         }
 
         let expscore = tcase.expdsrna.iter().map(|x| scores[*x]).sum();
@@ -53,7 +53,7 @@ mod tests {
             .iter()
             .map(|x| &transformed[*x])
             .collect_vec();
-        let key = |x: &&dsRNA| (x.brange().start, x.brange().end);
+        let key = |x: &&InvertedRepeat| (x.brange().start, x.brange().end);
         result.sort_by_key(key);
         expected.sort_by_key(key);
         debug_assert!(

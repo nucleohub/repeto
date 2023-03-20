@@ -1,9 +1,9 @@
-use super::super::dsRNA;
+use super::super::InvertedRepeat;
 use std::ops::Range;
 
 pub struct IndexAnchor {
     pub pos: usize,
-    pub rnas: Vec<usize>,
+    pub repeats: Vec<usize>,
 }
 
 pub struct Index {
@@ -15,16 +15,16 @@ pub struct Index {
     revstart: Vec<usize>,
     revend: Vec<usize>,
 
-    // dsRNA blocks in each dsRNA
+    // InvertedRepeat blocks in each InvertedRepeat
     blocks: Vec<Vec<Range<usize>>>,
 }
 
 impl Index {
-    pub fn new(dsrna: &[dsRNA]) -> Self {
-        let (starts, revstart) = Index::index(dsrna, |x| x.brange().start);
-        let (ends, revend) = Index::index(dsrna, |x| x.brange().end);
+    pub fn new(invrep: &[InvertedRepeat]) -> Self {
+        let (starts, revstart) = Index::index(invrep, |x| x.brange().start);
+        let (ends, revend) = Index::index(invrep, |x| x.brange().end);
 
-        let blocks = dsrna
+        let blocks = invrep
             .iter()
             .map(|x| {
                 let mut blocks = x.blocks();
@@ -59,8 +59,8 @@ impl Index {
     }
 
     fn index(
-        rnas: &[dsRNA],
-        key: impl for<'b> Fn(&'b dsRNA) -> usize,
+        rnas: &[InvertedRepeat],
+        key: impl for<'b> Fn(&'b InvertedRepeat) -> usize,
     ) -> (Vec<IndexAnchor>, Vec<usize>) {
         let mut argsort = (0..rnas.len()).collect::<Vec<_>>();
         argsort.sort_by_key(|x| key(&rnas[*x]));
@@ -78,7 +78,7 @@ impl Index {
                 }
                 index.push(IndexAnchor {
                     pos: curkey,
-                    rnas: cache,
+                    repeats: cache,
                 });
 
                 curkey = key(&rnas[rnaind]);
@@ -92,7 +92,7 @@ impl Index {
         }
         index.push(IndexAnchor {
             pos: curkey,
-            rnas: cache,
+            repeats: cache,
         });
         (index, revmap)
     }

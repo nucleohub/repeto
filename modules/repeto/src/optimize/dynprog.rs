@@ -2,7 +2,7 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use super::trace::TraceCell;
-use super::super::dsRNA;
+use super::super::InvertedRepeat;
 use itertools::Itertools;
 
 use super::Score;
@@ -11,7 +11,7 @@ use super::{index, trace};
 // General rules:
 // 1. If a hypothesis is included -> the best subset of its embedded hypothesis is also included
 // 2. If a hypothesis is excluded -> some of its embedded hypothesis might be included
-// Hypothesis => predicted dsRNA
+// Hypothesis => predicted InvertedRepeat
 //
 // We need to consdider the matrix with start/ends and the following recursive equation:
 // f(s,e) = max of the following
@@ -20,7 +20,7 @@ use super::{index, trace};
 //   * f(s, start(RNA)) + weight(RNA) + sum[f(start(gap_i), end(gap_i)) for all gaps in RNA where end(RNA) == e]
 struct Workload<'a> {
     pub index: index::Index,
-    pub dsrna: &'a [dsRNA],
+    pub invrep: &'a [InvertedRepeat],
     pub scores: &'a [Score],
 }
 
@@ -39,13 +39,13 @@ impl DynProgSolution {
 
     pub fn solve<'a>(
         &mut self,
-        dsrna: &'a [dsRNA],
+        invrep: &'a [InvertedRepeat],
         scores: &'a [Score],
-    ) -> (Score, Vec<&'a dsRNA>) {
-        debug_assert!(dsrna.len() == scores.len());
+    ) -> (Score, Vec<&'a InvertedRepeat>) {
+        debug_assert!(invrep.len() == scores.len());
         let w = Workload {
-            index: index::Index::new(dsrna),
-            dsrna,
+            index: index::Index::new(invrep),
+            invrep: invrep,
             scores,
         };
 
@@ -64,7 +64,7 @@ impl DynProgSolution {
             .tracer
             .trace(0, w.index.ends().len() - 1)
             .into_iter()
-            .map(|x| &dsrna[x])
+            .map(|x| &invrep[x])
             .collect();
 
         (score, optimum)
@@ -103,14 +103,14 @@ impl DynProgSolution {
 
         // * We look for the best rnafold here
         // TODO: please borrow checker without doing clone here
-        for &rnaid in &w.index.ends()[eind].rnas.clone() {
+        for &rnaid in &w.index.ends()[eind].repeats.clone() {
             let (rnasind, rnaeind) = w.index.revmap(rnaid);
             // Skip rnas that are not inside the current region
             if rnasind < sind {
                 continue;
             }
 
-            let rna = &w.dsrna[rnaid];
+            let rna = &w.invrep[rnaid];
             let mut score = w.scores[rnaid];
 
             debug_assert!(

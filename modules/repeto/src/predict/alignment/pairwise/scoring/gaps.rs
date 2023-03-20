@@ -3,7 +3,7 @@ pub use super::super::Score;
 // Gap scoring function MUST be additive
 // In other words, you can have whatever gapopen / gapextend scores you want as long as scores are additive (!)
 
-pub trait ScoringFunc {
+pub trait Scorer {
     fn seq1_gap_open(&self, pos: usize) -> Score;
     fn seq1_gap_extend(&self, pos: usize) -> Score;
 
@@ -11,12 +11,12 @@ pub trait ScoringFunc {
     fn seq2_gap_extend(&self, pos: usize) -> Score;
 }
 
-pub trait PosInvariantScoringFunc {
+pub trait PosInvariantScorer {
     fn gap_open(&self) -> Score;
     fn gap_extend(&self) -> Score;
 }
 
-impl<T: PosInvariantScoringFunc> ScoringFunc for T {
+impl<T: PosInvariantScorer> Scorer for T {
     #[inline(always)]
     fn seq1_gap_open(&self, _: usize) -> Score {
         self.gap_open()
@@ -38,12 +38,12 @@ impl<T: PosInvariantScoringFunc> ScoringFunc for T {
     }
 }
 
-pub struct AffineScheme {
+pub struct Affine {
     pub open: Score,
     pub extend: Score,
 }
 
-impl PosInvariantScoringFunc for AffineScheme {
+impl PosInvariantScorer for Affine {
     #[inline(always)]
     fn gap_open(&self) -> Score {
         self.open

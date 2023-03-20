@@ -1,28 +1,25 @@
 use std::ops::Range;
 
-use super::super::AlignmentOps;
 use super::{Trace, TracedAlignment, Tracer};
+use super::super::super::{AlignmentOp, AlignmentStep};
 
 struct RunningTrace {
-    pub op: Trace,
-    pub len: u8,
+    pub op: AlignmentOp,
+    pub len: usize,
 }
 
 impl RunningTrace {
-    pub fn new(trace: Trace) -> Self {
-        Self { op: trace, len: 1 }
+    pub fn new(op: AlignmentOp, len: usize) -> Self {
+        Self { op, len }
     }
 
-    pub fn to_alignment_op(self) -> AlignmentOps {
-        debug_assert!(self.len > 0);
-        match self.op {
-            Trace::None => {
-                unreachable!("TraceMatrix was corrupted or not calculated correctly.")
-            }
-            Trace::GapRow => AlignmentOps::GapFirst(self.len),
-            Trace::GapCol => AlignmentOps::GapSecond(self.len),
-            Trace::Match => AlignmentOps::Match(self.len),
-            Trace::Mismatch => AlignmentOps::Mismatch(self.len),
+    pub fn save(self, saveto: &mut Vec<AlignmentStep>) {
+        let tail = self.len % (u8::MAX as usize);
+        if tail > 0 {
+            saveto.push(AlignmentStep { op: self.op, len: tail as u8 });
+        }
+        for _ in 0..(self.len / (u8::MAX as usize)) {
+            saveto.push(AlignmentStep { op: self.op, len: u8::MAX });
         }
     }
 }
@@ -63,13 +60,8 @@ impl Tracer for TraceMatrix {
     }
 
     #[inline(always)]
-    fn matched(&mut self, row: usize, col: usize) {
-        self.mat[(row + 1) * self.cols + (col + 1)] = Trace::Match;
-    }
-
-    #[inline(always)]
-    fn mismatched(&mut self, row: usize, col: usize) {
-        self.mat[(row + 1) * self.cols + (col + 1)] = Trace::Mismatch;
+    fn equivalent(&mut self, row: usize, col: usize) {
+        self.mat[(row + 1) * self.cols + (col + 1)] = Trace::Equivalent;
     }
 
     fn trace(&self, row: usize, col: usize) -> Result<TracedAlignment, ()> {
@@ -79,30 +71,34 @@ impl Tracer for TraceMatrix {
         }
 
         let (mut row, mut col) = (seq1end, seq2end);
-        let seed = self.mat[row * self.cols + col];
-        if seed == Trace::None {
-            return Err(());
-        }
+        let seed = match self.mat[row * self.cols + col].try_into() {
+            Err(()) => return Err(()),
+            Ok(op) => op
+        };
 
         let mut result = Vec::new();
-        let mut trace = RunningTrace::new(seed);
-        trace.len = 0;
+        let mut trace = RunningTrace::new(seed, 0);
 
         loop {
             let op = self.mat[row * self.cols + col];
+            let aop = match op.try_into() {
+                Err(()) => {
+                    trace.save(&mut result);
+                    break;
+                }
+                Ok(op) => op
+            };
 
-            if op == Trace::None {
-                result.push(trace.to_alignment_op());
-                break;
-            } else if op == trace.op {
+            if aop == trace.op {
                 trace.len += 1;
             } else {
-                result.push(trace.to_alignment_op());
-                trace = RunningTrace::new(op);
+                trace.save(&mut result);
+                trace = RunningTrace::new(aop, 1);
             }
 
             match op {
                 Trace::None => {
+                    debug_assert!(false, "Must be unreachable!");
                     break;
                 }
                 Trace::GapRow => {
@@ -111,7 +107,7 @@ impl Tracer for TraceMatrix {
                 Trace::GapCol => {
                     col -= 1;
                 }
-                Trace::Match | Trace::Mismatch => {
+                Trace::Equivalent => {
                     row -= 1;
                     col -= 1;
                 }
@@ -143,8 +139,8 @@ impl Tracer for TraceMatrix {
 
 #[cfg(test)]
 mod test {
-    use super::super::test_suite;
     use super::*;
+    use super::super::test_suite;
 
     #[test]
     fn test() {

@@ -1,5 +1,7 @@
 pub use super::Symbol;
 
+// Instead of making a custom trait here I must support Rust builtin traits for containers
+// once they are ready: https://internals.rust-lang.org/t/traits-that-should-be-in-std-but-arent/3002
 pub trait Alignable {
     fn len(&self) -> usize;
     fn at(&self, pos: usize) -> Symbol;

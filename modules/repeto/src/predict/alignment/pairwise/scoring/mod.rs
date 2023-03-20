@@ -4,4 +4,4 @@ pub mod delegate;
 pub mod gaps;
 pub mod symbols;
 
-pub trait ScoringFunc: gaps::ScoringFunc + symbols::ScoringFunc {}
+pub trait ScoringScheme: gaps::Scorer + symbols::Scorer {}

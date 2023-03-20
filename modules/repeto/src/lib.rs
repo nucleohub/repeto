@@ -1,6 +1,6 @@
 // #[allow(non_snake_case)]
-mod dsrna;
-pub use dsrna::{Segment, dsRNA};
+mod repeats;
+pub use repeats::{Segment, InvertedRepeat};
 
 pub mod predict;
 pub mod optimize;
