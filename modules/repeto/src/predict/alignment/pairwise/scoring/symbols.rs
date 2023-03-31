@@ -5,6 +5,7 @@ pub use super::super::{Score, Symbol};
 pub enum EquivType {
     Match,
     Mismatch,
+    Equivalent,
 }
 
 pub trait EquivClassifier {

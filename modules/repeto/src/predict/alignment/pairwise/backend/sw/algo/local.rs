@@ -1,10 +1,6 @@
 use std::cmp::max;
 
-use crate::predict::alignment::pairwise::Aligner;
-
-use super::{Alignable, ScoringScheme, Storage, Tracer};
-use super::super::Score;
-use super::super::traceback::Trace;
+use super::{Alignable, Score, ScoringScheme, Tracer};
 
 // Optimal alignments in linear space: https://doi.org/10.1093/bioinformatics/4.1.11
 
@@ -22,11 +18,11 @@ use super::super::traceback::Trace;
 // }
 // D(i,j) = max {
 //      D(i-1,j) + gap-extend
-//      C(i-1,j) + gap-open + gap-extend
+//      C(i-1,j) + gap-open
 // }
 // I(i,j) = {
 //      I(i,j-1) + gap-extend
-//      C(i,j-1) + gap-open + gap-extend
+//      C(i,j-1) + gap-open
 // }
 
 // Optimization:
@@ -68,7 +64,9 @@ impl FullScan {
     }
 
     fn solve_first_col(&mut self, seq1: &impl Alignable, seq2: &impl Alignable,
-                       scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer, storage: &mut impl Storage) {
+                       scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer) {
+        tracer.first_col_start();
+
         let s2 = seq2.at(0);
         // Initialize gap-col
         // (required in later recursion, set to 0 for faster initialization)
@@ -82,71 +80,93 @@ impl FullScan {
         self.scores.extend((0..seq1.len()).map(|row| {
             let equiv = scorer.score(row, seq1.at(row), 0, s2);
             if equiv > 0 {
-                tracer.equivalent(row, 0);
-                storage.equivalent(row, 0, equiv);
+                tracer.equivalent(row, 0, equiv);
                 equiv
             } else {
-                tracer.restart(row, 0);
-                storage.restart(row, 0);
+                tracer.none(row, 0);
                 0
             }
-        }))
+        }));
+
+        tracer.first_col_end();
     }
 
     pub fn align(&mut self, seq1: &impl Alignable, seq2: &impl Alignable,
-                 scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer, storage: &mut impl Storage) {
-        self.solve_first_col(seq1, seq2, scorer, tracer, storage);
-        for col in 1..seq1.len() {
-            // First element
+                 scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer) {
+        if seq1.len() == 0 || seq2.len() == 0 {
+            return;
+        }
+
+        self.solve_first_col(seq1, seq2, scorer, tracer);
+        for col in 1..seq2.len() {
+            tracer.col_start(col);
+
             self.gaprow = 0;
             self.diagonal = self.scores[0];
+
+
+            // First element
+            // (assuming that gap-col scores will be always <= 0)
             let equiv = scorer.score(0, seq1.at(0), col, seq2.at(col));
             self.scores[0] = if equiv > 0 {
-                tracer.equivalent(0, col);
-                storage.equivalent(0, col, equiv);
+                tracer.equivalent(0, col, equiv);
                 equiv
             } else {
-                tracer.restart(0, col);
-                storage.equivalent(0, col);
+                tracer.none(0, col);
                 0
             };
 
-            for row in 1..seq2.len() {
+            for row in 1..seq1.len() {
+                self.left = self.scores[row];
+
                 // Vertical/row gaps
-                self.gaprow = max(
-                    self.gaprow,
-                    self.scores[row - 1] + scorer.seq1_gap_open(row - 1),
-                ) + scorer.seq1_gap_extend(row);
+                let mut opened = self.scores[row - 1] + scorer.seq1_gap_open(row);
+                let mut extended = self.gaprow + scorer.seq1_gap_extend(row);
+
+                self.gaprow = if opened > extended && opened > 0 {
+                    tracer.row_gap_open(row, col, opened);
+                    opened
+                } else if extended > 0 {
+                    tracer.row_gap_extend(row, col, extended);
+                    extended
+                } else {
+                    0
+                };
 
                 // Horizontal/column gaps
-                self.gapcol[row] = max(
-                    self.gapcol[row],
-                    self.scores[row] + scorer.seq2_gap_open(row),
-                ) + scorer.seq2_gap_extend(col);
+                opened = self.left + scorer.seq2_gap_open(col);
+                extended = self.gapcol[row] + scorer.seq2_gap_extend(col);
+
+                self.gapcol[row] = if opened > extended && opened > 0 {
+                    tracer.col_gap_open(row, col, opened);
+                    opened
+                } else if extended > 0 {
+                    tracer.col_gap_extend(row, col, extended);
+                    extended
+                } else {
+                    0
+                };
 
                 // Best scores
-                self.left = scorer[row];
-                let equiv = scorer.score(row, seq1.at(row), col, seq2.at(col));
-                scores[row] = if equiv > self.gaprow && equiv > self.gapcol[row] && equiv > 0 {
-                    tracer.equivalent(row, col);
-                    storage.equivalent(row, col, equiv);
+                let equiv = self.diagonal + scorer.score(row, seq1.at(row), col, seq2.at(col));
+                self.scores[row] = if equiv > self.gaprow && equiv > self.gapcol[row] && equiv > 0 {
+                    tracer.equivalent(row, col, equiv);
                     equiv
                 } else if self.gapcol[row] > self.gaprow && self.gapcol[row] > 0 {
-                    tracer.gap_col(row, col);
-                    storage.gap_col(row, col, self.gapcol[row]);
+                    tracer.gap_col(row, col, self.gapcol[row]);
                     self.gapcol[row]
                 } else if self.gaprow > 0 {
-                    tracer.gap_row(row, col);
-                    storage.gap_row(row, col, self.gaprow);
+                    tracer.gap_row(row, col, self.gaprow);
                     self.gaprow
                 } else {
-                    tracer.restart(row, col);
-                    storage.restart(row, col);
+                    tracer.none(row, col);
                     0
                 };
 
                 self.diagonal = self.left;
             }
+
+            tracer.col_end(col);
         }
     }
 }
