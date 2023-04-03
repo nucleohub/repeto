@@ -8,17 +8,17 @@ pub struct Segment {
 }
 
 impl Segment {
-    pub fn new(top: Range<usize>, bottom: Range<usize>) -> Self {
-        assert_eq!(top.len(), bottom.len());
-        assert!(top.start < top.end && top.end <= bottom.start && bottom.start < bottom.end);
-        Self { left: top, right: bottom }
+    pub fn new(left: Range<usize>, right: Range<usize>) -> Self {
+        assert_eq!(left.len(), right.len());
+        assert!(left.start < left.end && left.end <= right.start && right.start < right.end);
+        Self { left, right }
     }
 
-    pub fn top(&self) -> &Range<usize> {
+    pub fn left(&self) -> &Range<usize> {
         &self.left
     }
 
-    pub fn bottom(&self) -> &Range<usize> {
+    pub fn right(&self) -> &Range<usize> {
         &self.right
     }
 }

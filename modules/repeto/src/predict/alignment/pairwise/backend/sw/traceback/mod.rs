@@ -4,7 +4,7 @@ pub use tracemat::TraceMatrix;
 
 use super::Score;
 use super::algo::{BestDirectionTracer, GapTracer, Tracer};
-use super::super::super::{AlignmentOp, AlignmentStep};
+use super::super::super::{AlignmentStep};
 
 mod tracemat;
 

@@ -37,11 +37,11 @@ impl DynProgSolution {
         }
     }
 
-    pub fn solve<'a>(
+    pub fn solve<'a, 'b>(
         &mut self,
         invrep: &'a [InvertedRepeat],
-        scores: &'a [Score],
-    ) -> (Score, Vec<&'a InvertedRepeat>) {
+        scores: &'b [Score],
+    ) -> (Vec<&'a InvertedRepeat>, Score) {
         debug_assert!(invrep.len() == scores.len());
         let w = Workload {
             index: index::Index::new(invrep),
@@ -67,7 +67,7 @@ impl DynProgSolution {
             .map(|x| &invrep[x])
             .collect();
 
-        (score, optimum)
+        (optimum, score)
     }
 
     fn subsolve(&mut self, w: &Workload, sind: usize, eind: usize) -> Score {

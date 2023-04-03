@@ -8,7 +8,7 @@ pub trait ScoringScheme: gaps::Scorer + symbols::Scorer {}
 
 pub fn default() -> Delegate<symbols::MatchMismatch, gaps::Affine> {
     Delegate {
-        symbols: symbols::MatchMismatch { samesc: 1, diffsc: -2 },
+        symbols: symbols::MatchMismatch { same: 1, diff: -2 },
         gaps: gaps::Affine { open: -5, extend: -1 },
     }
 }

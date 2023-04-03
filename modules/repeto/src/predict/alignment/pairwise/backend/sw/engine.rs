@@ -1,3 +1,6 @@
+use itertools::Itertools;
+use crate::predict::alignment::pairwise::backend::sw::storage::AllOptimal;
+use crate::predict::alignment::pairwise::local::MultiAlignerConfig;
 use crate::predict::alignment::Score;
 
 use super::algo::{BestDirectionTracer, GapTracer, Tracer};
@@ -105,22 +108,16 @@ impl<S: Storage, T: TraceMat, SF: ScoringScheme> Engine<S, T, SF> {
         let algo = FullScan::new(0);
         Self { algo, scoring, tracers: Tracers { storage, tracemat } }
     }
-}
 
-impl<S1: Alignable, S2: Alignable, S: Storage, T: TraceMat, SF: ScoringScheme> local::Aligner<S1, S2, SF> for Engine<S, T, SF> {
-    fn reconfigure(&mut self, scoring: SF) {
-        self.scoring = scoring
-    }
-
-    fn align(&mut self, seq1: &S1, seq2: &S2) -> Result<local::Alignment, ()> {
+    fn run<S1: Alignable, S2: Alignable>(&mut self, seq1: &S1, seq2: &S2) -> Vec<local::Alignment> {
         if seq1.len() == 0 || seq2.len() == 0 {
-            return Err(());
+            return vec![];
         }
 
         self.tracers.storage.reset(seq1.len(), seq2.len());
         self.tracers.tracemat.reset(seq1.len(), seq2.len());
 
-        self.algo.align(seq1, seq2, &mut self.scoring, &mut self.tracers);
+        self.algo.scan_all(seq1, seq2, &mut self.scoring, &mut self.tracers);
 
         self.tracers.storage.finalize().into_iter().map(|x| {
             let trace = self.tracers.tracemat.trace(x.row, x.col).unwrap();
@@ -138,7 +135,76 @@ impl<S1: Alignable, S2: Alignable, S: Storage, T: TraceMat, SF: ScoringScheme> l
                 seq1: trace.seq1,
                 seq2: trace.seq2,
             }
-        }).max_by_key(|x| x.score).ok_or(())
+        }).collect()
+    }
+}
+
+impl<S1: Alignable, S2: Alignable, S: Storage, T: TraceMat, SF: ScoringScheme> local::Aligner<S1, S2, SF> for Engine<S, T, SF> {
+    fn with_scoring(&mut self, scoring: SF) {
+        self.scoring = scoring
+    }
+
+    fn align(&mut self, seq1: &S1, seq2: &S2) -> Result<local::Alignment, ()> {
+        self.run(seq1, seq2).into_iter().max_by_key(|x| x.score).ok_or(())
+    }
+}
+
+impl<T: TraceMat, SF: ScoringScheme> MultiAlignerConfig<SF> for Engine<AllOptimal, T, SF> {
+    fn set_scoring(&mut self, scoring: SF) {self.scoring = scoring
+    }
+
+    fn set_min_score_thr(&mut self, thr: Score) {
+        self.tracers.storage.minscore = thr;
+    }
+}
+
+impl<S1: Alignable, S2: Alignable, T: TraceMat, SF: ScoringScheme> local::MultiAligner<S1, S2, SF> for Engine<AllOptimal, T, SF> {
+    fn align(&mut self, seq1: &S1, seq2: &S2, saveto: &mut Vec<local::Alignment>) {
+        let mut results = self.run(seq1, seq2);
+
+        // Collapse overlapping paths & save results
+        results.sort_by_key(|x| x.score);
+        let startind = saveto.len();
+        for item in results.into_iter().rev() {
+            let intersects = saveto[startind..].iter().any(|x| x.intersects(&item));
+            if !intersects {
+                saveto.push(item);
+            }
+        }
+    }
+
+    fn uptriangle(&mut self, seq1: &S1, seq2: &S2, offset: usize, saveto: &mut Vec<local::Alignment>) {
+        self.tracers.storage.reset(seq1.len(), seq2.len());
+        self.tracers.tracemat.reset(seq1.len(), seq2.len());
+
+        self.algo.scan_up_triangle(seq1, seq2, offset, &mut self.scoring, &mut self.tracers);
+
+        let results = self.tracers.storage.finalize().into_iter().map(|x| {
+            let trace = self.tracers.tracemat.trace(x.row, x.col).unwrap();
+            debug_assert_eq!(trace.seq1.end, x.row + 1);
+            debug_assert_eq!(trace.seq2.end, x.col + 1);
+            let ops = alignment::utils::disambiguate(
+                trace.ops, &self.scoring,
+                seq1, trace.seq1.start,
+                seq2, trace.seq2.start,
+            );
+
+            local::Alignment {
+                score: x.score,
+                steps: ops,
+                seq1: trace.seq1,
+                seq2: trace.seq2,
+            }
+        }).sorted_by_key(|x| x.score);
+
+        // Collapse overlapping paths & save results
+        let startind = saveto.len();
+        for item in results.into_iter().rev() {
+            let intersects = saveto[startind..].iter().any(|x| x.intersects(&item));
+            if !intersects {
+                saveto.push(item);
+            }
+        }
     }
 }
 
@@ -158,5 +224,16 @@ mod test {
         );
 
         local::test_suite::best::test_all(&mut engine);
+    }
+
+    #[test]
+    fn sw_local_alloptimal() {
+        let mut engine = Engine::new(
+            storage::AllOptimal::new(),
+            traceback::TraceMatrix::new(),
+            scoring::default(),
+        );
+
+        local::test_suite::alloptimal::test_all(&mut engine);
     }
 }

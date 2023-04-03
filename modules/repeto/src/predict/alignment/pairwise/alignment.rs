@@ -1,6 +1,5 @@
-use std::ops::Range;
+use std::iter::Peekable;
 
-use super::Score;
 use super::scoring::symbols::EquivType;
 
 #[repr(u8)]
@@ -45,11 +44,79 @@ pub struct AlignmentStep {
     pub len: u8,
 }
 
-pub mod utils {
-    use std::cmp::{max, min};
-    use std::ops::Range;
+#[derive(Copy, Clone)]
+pub struct AlignmentOffset {
+    pub seq1: usize,
+    pub seq2: usize,
+}
 
-    use geo::{Coord, Intersects, Line};
+
+pub struct CoalescedAlignmentStep {
+    pub start: AlignmentOffset,
+    pub len: usize,
+    pub op: AlignmentOp,
+}
+
+impl CoalescedAlignmentStep {
+    pub fn end(&self) -> AlignmentOffset {
+        let mut end = self.start;
+        match self.op {
+            AlignmentOp::GapFirst => { end.seq1 += self.len }
+            AlignmentOp::GapSecond => { end.seq2 += self.len }
+            AlignmentOp::Equivalent | AlignmentOp::Mismatch | AlignmentOp::Match => {
+                end.seq1 += self.len;
+                end.seq2 += self.len;
+            }
+        };
+        end
+    }
+}
+
+pub struct CoalescedAlignmentIter<'a, T: Iterator<Item=&'a AlignmentStep>> {
+    pub iter: Peekable<T>,
+    pub offset: AlignmentOffset,
+}
+
+impl<'a, T: Iterator<Item=&'a AlignmentStep>> Iterator for CoalescedAlignmentIter<'a, T> {
+    type Item = CoalescedAlignmentStep;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let mut coalesced = match self.iter.next() {
+            None => { return None; }
+            Some(x) => CoalescedAlignmentStep {
+                start: self.offset.clone(),
+                len: x.len as usize,
+                op: x.op,
+            }
+        };
+        loop {
+            match self.iter.peek() {
+                Some(x) if x.op == coalesced.op => {
+                    let x = self.iter.next().unwrap();
+                    coalesced.len += x.len as usize;
+                }
+                _ => {
+                    // Advance the offset
+                    match coalesced.op {
+                        AlignmentOp::GapFirst => { self.offset.seq1 += coalesced.len; }
+                        AlignmentOp::GapSecond => { self.offset.seq2 += coalesced.len; }
+                        AlignmentOp::Equivalent | AlignmentOp::Match | AlignmentOp::Mismatch => {
+                            self.offset.seq1 += coalesced.len;
+                            self.offset.seq2 += coalesced.len;
+                        }
+                    }
+                    return Some(coalesced);
+                }
+            }
+        }
+    }
+}
+
+
+pub mod utils {
+    use geo::{Intersects, Line};
+
+    use crate::predict::alignment::pairwise::alignment::CoalescedAlignmentStep;
 
     use super::{AlignmentOp, AlignmentStep};
     use super::super::Alignable;
@@ -172,81 +239,59 @@ pub mod utils {
     }
 
 
-    pub fn intersects(start1: (usize, usize), steps1: &[AlignmentStep],
-                      start2: (usize, usize), steps2: &[AlignmentStep]) -> bool {
-        #[inline(always)]
-        fn shift(line: &mut Line<isize>, step: &AlignmentStep) {
-            line.start = line.end;
-            match step.op {
-                AlignmentOp::GapFirst => { line.end.y += step.len as isize; }
-                AlignmentOp::GapSecond => { line.end.x += step.len as isize; }
-                AlignmentOp::Equivalent | AlignmentOp::Match | AlignmentOp::Mismatch => {
-                    line.end.x += step.len as isize;
-                    line.end.y += step.len as isize;
-                }
-            }
+    pub fn intersects(
+        mut iter1: impl Iterator<Item=CoalescedAlignmentStep>,
+        mut iter2: impl Iterator<Item=CoalescedAlignmentStep>,
+    ) -> bool {
+        fn toline(step: CoalescedAlignmentStep) -> Line<isize> {
+            let end = step.end();
+            Line::new(
+                (step.start.seq2 as isize, step.start.seq1 as isize),
+                (end.seq2 as isize - 1, end.seq1 as isize - 1),
+            )
         }
 
-        let mut first = Line::new((0, 0), (start1.0 as isize, start1.1 as isize));
-        let mut second = Line::new((0, 0), (start2.0 as isize, start2.1 as isize));
-
-        let (mut iter1, mut iter2) = (steps1.iter(), steps2.iter());
-        match iter1.next() {
+        let mut first = match iter1.next() {
             None => { return false; }
-            Some(x) => { shift(&mut first, x) }
+            Some(x) => toline(x)
         };
-        match iter2.next() {
+        let mut second = match iter2.next() {
             None => { return false; }
-            Some(x) => { shift(&mut second, x) }
+            Some(x) => toline(x)
         };
 
-        // Sync horizontal (X, seq2) coordinates
-        {
-            let (iter, line, border) = if second.end.x <= first.start.x {
-                (&mut iter2, &mut second, first.start.x)
-            } else {
-                (&mut iter1, &mut first, second.start.x)
-            };
-            while line.end.x <= border {
-                match iter.next() {
-                    None => { return false; }
-                    Some(x) => {
-                        shift(line, x);
-                    }
-                }
-            }
-        }
+        // TODO: optimize - fast forward X/Y where applicable
 
         // Detect overlaps
         loop {
-            debug_assert!(
-                max(first.start.x, second.start.x) < min(first.end.x, second.end.x)
-            );
+            // debug_assert!(
+            //     max(first.start.x, second.start.x) <= min(first.end.x, second.end.x)
+            // );
             if first.intersects(&second) {
                 return true;
             }
 
             if first.end.x < second.end.x {
-                match iter1.next() {
+                first = match iter1.next() {
                     None => { return false; }
-                    Some(x) => { shift(&mut first, x) }
-                }
+                    Some(x) => { toline(x) }
+                };
             } else if second.end.x < first.end.x {
                 debug_assert!(second.end.x <= first.end.x);
-                match iter2.next() {
+                second = match iter2.next() {
                     None => { return false; }
-                    Some(x) => { shift(&mut second, x) }
-                }
+                    Some(x) => { toline(x) }
+                };
             } else {
                 // Border situation - both segments end in the same position
-                match iter1.next() {
+                first = match iter1.next() {
                     None => { return false; }
-                    Some(x) => { shift(&mut first, x) }
-                }
-                match iter2.next() {
+                    Some(x) => { toline(x) }
+                };
+                second = match iter2.next() {
                     None => { return false; }
-                    Some(x) => { shift(&mut second, x) }
-                }
+                    Some(x) => { toline(x) }
+                };
             }
         }
     }

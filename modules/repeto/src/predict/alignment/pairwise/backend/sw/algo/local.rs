@@ -1,5 +1,3 @@
-use std::cmp::max;
-
 use super::{Alignable, Score, ScoringScheme, Tracer};
 
 // Optimal alignments in linear space: https://doi.org/10.1093/bioinformatics/4.1.11
@@ -63,7 +61,7 @@ impl FullScan {
         }
     }
 
-    fn solve_first_col(&mut self, seq1: &impl Alignable, seq2: &impl Alignable,
+    fn solve_first_col(&mut self, seq1: &impl Alignable, seq2: &impl Alignable, skip_last: usize,
                        scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer) {
         tracer.first_col_start();
 
@@ -77,7 +75,7 @@ impl FullScan {
         // (assuming that gap-row scores will be always <= 0)
         self.scores.clear();
         // TODO: verify that extend is faster
-        self.scores.extend((0..seq1.len()).map(|row| {
+        self.scores.extend((0..seq1.len() - skip_last).map(|row| {
             let equiv = scorer.score(row, seq1.at(row), 0, s2);
             if equiv > 0 {
                 tracer.equivalent(row, 0, equiv);
@@ -91,13 +89,94 @@ impl FullScan {
         tracer.first_col_end();
     }
 
-    pub fn align(&mut self, seq1: &impl Alignable, seq2: &impl Alignable,
-                 scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer) {
+    pub fn scan_up_triangle(
+        &mut self, seq1: &impl Alignable, seq2: &impl Alignable, offset: usize,
+        scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer,
+    ) {
         if seq1.len() == 0 || seq2.len() == 0 {
             return;
         }
 
-        self.solve_first_col(seq1, seq2, scorer, tracer);
+        self.solve_first_col(seq1, seq2, offset, scorer, tracer);
+        for col in 1..(seq2.len() - offset) {
+            tracer.col_start(col);
+
+            self.gaprow = 0;
+            self.diagonal = self.scores[0];
+
+
+            // First element
+            // (assuming that gap-col scores will be always <= 0)
+            let equiv = scorer.score(0, seq1.at(0), col, seq2.at(col));
+            self.scores[0] = if equiv > 0 {
+                tracer.equivalent(0, col, equiv);
+                equiv
+            } else {
+                tracer.none(0, col);
+                0
+            };
+
+            for row in 1..(seq1.len() - col - offset) {
+                self.left = self.scores[row];
+
+                // Vertical/row gaps
+                let mut opened = self.scores[row - 1] + scorer.seq1_gap_open(row);
+                let mut extended = self.gaprow + scorer.seq1_gap_extend(row);
+
+                self.gaprow = if opened > extended && opened > 0 {
+                    tracer.row_gap_open(row, col, opened);
+                    opened
+                } else if extended > 0 {
+                    tracer.row_gap_extend(row, col, extended);
+                    extended
+                } else {
+                    0
+                };
+
+                // Horizontal/column gaps
+                opened = self.left + scorer.seq2_gap_open(col);
+                extended = self.gapcol[row] + scorer.seq2_gap_extend(col);
+
+                self.gapcol[row] = if opened > extended && opened > 0 {
+                    tracer.col_gap_open(row, col, opened);
+                    opened
+                } else if extended > 0 {
+                    tracer.col_gap_extend(row, col, extended);
+                    extended
+                } else {
+                    0
+                };
+
+                // Best scores
+                let equiv = self.diagonal + scorer.score(row, seq1.at(row), col, seq2.at(col));
+                self.scores[row] = if equiv > self.gaprow && equiv > self.gapcol[row] && equiv > 0 {
+                    tracer.equivalent(row, col, equiv);
+                    equiv
+                } else if self.gapcol[row] > self.gaprow && self.gapcol[row] > 0 {
+                    tracer.gap_col(row, col, self.gapcol[row]);
+                    self.gapcol[row]
+                } else if self.gaprow > 0 {
+                    tracer.gap_row(row, col, self.gaprow);
+                    self.gaprow
+                } else {
+                    tracer.none(row, col);
+                    0
+                };
+
+                self.diagonal = self.left;
+            }
+
+            tracer.col_end(col);
+        }
+    }
+
+    pub fn scan_all(&mut self, seq1: &impl Alignable, seq2: &impl Alignable,
+                    scorer: &mut impl ScoringScheme, tracer: &mut impl Tracer) {
+        if seq1.len() == 0 || seq2.len() == 0 {
+            return;
+        }
+
+        self.solve_first_col(seq1, seq2, 0, scorer, tracer);
         for col in 1..seq2.len() {
             tracer.col_start(col);
 

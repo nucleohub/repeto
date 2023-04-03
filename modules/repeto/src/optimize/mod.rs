@@ -6,14 +6,14 @@ mod trace;
 
 pub type Score = i32;
 
-pub fn run<'a>(dsrna: &'a [InvertedRepeat], scores: &'a [Score]) -> (Score, Vec<&'a InvertedRepeat>) {
+pub fn run<'a, 'b>(dsrna: &'a [InvertedRepeat], scores: &'b [Score]) -> (Vec<&'a InvertedRepeat>, Score) {
     assert_eq!(dsrna.len(), scores.len());
 
     // Trivial solutions
     if dsrna.is_empty() || (dsrna.len() == 1 && scores[0] == 0) {
-        return (0, vec![]);
+        return (vec![], 0);
     } else if dsrna.len() == 1 && scores[0] > 0 {
-        return (scores[0], vec![&dsrna[0]]);
+        return (vec![&dsrna[0]], scores[0]);
     }
 
     dynprog::DynProgSolution::new().solve(dsrna, scores)
@@ -45,7 +45,7 @@ mod tests {
         }
 
         let expscore = tcase.expdsrna.iter().map(|x| scores[*x]).sum();
-        let (score, mut result) = run(&transformed, &scores);
+        let (mut result, score) = run(&transformed, &scores);
         debug_assert!(score == expscore, "{msg}\nScore: {expscore} vs {score}");
 
         let mut expected = tcase

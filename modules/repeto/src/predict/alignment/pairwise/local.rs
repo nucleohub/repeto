@@ -1,14 +1,11 @@
+use std::cmp::{max, min};
 use std::ops::Range;
+
 pub use super::{Alignable, Score, Symbol};
-pub use super::alignment::{AlignmentOp, AlignmentStep};
+pub use super::alignment::{AlignmentOp, AlignmentOffset, AlignmentStep, CoalescedAlignmentStep, CoalescedAlignmentIter};
 use super::alignment::utils;
 pub use super::constraint::{ConstrainedPos, Constraint};
 use super::scoring::ScoringScheme;
-
-pub struct AlignmentOffset {
-    pub seq1: usize,
-    pub seq2: usize,
-}
 
 pub struct Alignment {
     pub score: Score,
@@ -32,15 +29,39 @@ impl Alignment {
         let total: usize = self.len();
         utils::prettify(seq1, seq2, &self.steps, total)
     }
+
+    pub fn intersects(&self, other: &Alignment) -> bool {
+        if max(self.seq1.start, other.seq1.start) >= min(self.seq1.end, other.seq1.end) {
+            return false;
+        }
+        if max(self.seq2.start, other.seq2.start) >= min(self.seq2.end, other.seq2.end) {
+            return false;
+        }
+        return utils::intersects(self.coalesced_steps(), other.coalesced_steps());
+    }
+
+    pub fn coalesced_steps(&self) -> impl Iterator<Item=CoalescedAlignmentStep> + '_ {
+        CoalescedAlignmentIter {
+            iter: self.steps.iter().peekable(),
+            offset: AlignmentOffset { seq1: self.seq1.start, seq2: self.seq2.start },
+        }
+    }
 }
 
 pub trait Aligner<S1: Alignable, S2: Alignable, SF: ScoringScheme> {
-    fn reconfigure(&mut self, scoring: SF);
+    fn with_scoring(&mut self, scoring: SF);
     fn align(&mut self, seq1: &S1, seq2: &S2) -> Result<Alignment, ()>;
 }
 
-pub trait MultiAligner<S1: Alignable, S2: Alignable> {
+pub trait MultiAlignerConfig<SF: ScoringScheme> {
+    fn set_scoring(&mut self, scoring: SF);
+    fn set_min_score_thr(&mut self, thr: Score);
+    // fn set_min_matches_run_thr(&mut self, thr: Score);
+}
+
+pub trait MultiAligner<S1: Alignable, S2: Alignable, SF: ScoringScheme> : MultiAlignerConfig<SF> {
     fn align(&mut self, seq1: &S1, seq2: &S2, saveto: &mut Vec<Alignment>);
+    fn uptriangle(&mut self, seq1: &S1, seq2: &S2, offset: usize, saveto: &mut Vec<Alignment>);
 }
 
 
@@ -54,28 +75,38 @@ pub mod test_suite {
         scoring::Delegate<scoring::symbols::MatchMismatch, scoring::gaps::Affine>
     >;
 
-    struct Workload<'a> {
-        seq1: (&'a [u8], usize),
-        seq2: (&'a [u8], usize),
-        score: Score,
-        rle: &'a str,
+    type TestMultiAligner<'a> = dyn MultiAligner<
+        &'a [u8], &'a [u8],
+        scoring::Delegate<scoring::symbols::MatchMismatch, scoring::gaps::Affine>
+    >;
+
+    pub fn invrle(rle: &str) -> String {
+        let gapfirst = AlignmentOp::symbol(&AlignmentOp::GapFirst);
+        let gapsecond = AlignmentOp::symbol(&AlignmentOp::GapSecond);
+        rle.chars().map(|x|
+            if x == gapfirst {
+                gapsecond
+            } else if x == gapsecond {
+                gapfirst
+            } else {
+                x
+            }
+        ).collect::<String>()
     }
+
 
     pub mod best {
         use super::*;
 
-        fn ensure<'a>(aligner: &mut TestAligner<'a>, mut w: Workload<'a>) {
-            let gapfirst = AlignmentOp::symbol(&AlignmentOp::GapFirst);
-            let gapsecond = AlignmentOp::symbol(&AlignmentOp::GapSecond);
-            let invrle = w.rle.chars().map(|x|
-                if x == gapfirst {
-                    gapsecond
-                } else if x == gapsecond {
-                    gapfirst
-                } else {
-                    x
-                }
-            ).collect::<String>();
+        struct Workload<'a> {
+            seq1: (&'a [u8], usize),
+            seq2: (&'a [u8], usize),
+            score: Score,
+            rle: &'a str,
+        }
+
+        fn ensure<'a>(aligner: &mut TestAligner<'a>, w: Workload<'a>) {
+            let invrle = invrle(w.rle);
 
             for (seq1, seq2, rle) in [
                 (w.seq1, w.seq2, w.rle),
@@ -203,19 +234,113 @@ pub mod test_suite {
         }
 
         pub fn test_all(aligner: &mut TestAligner) {
-            aligner.reconfigure(scoring::compose(
-                scoring::symbols::MatchMismatch { samesc: 1, diffsc: -2 },
+            aligner.with_scoring(scoring::compose(
+                scoring::symbols::MatchMismatch { same: 1, diff: -2 },
                 scoring::gaps::Affine { open: -5, extend: -1 },
             ));
             test_empty(aligner);
             test_no_gaps(aligner);
             test_affine_gaps(aligner);
 
-            aligner.reconfigure(scoring::compose(
-                scoring::symbols::MatchMismatch { samesc: 1, diffsc: -2 },
+            aligner.with_scoring(scoring::compose(
+                scoring::symbols::MatchMismatch { same: 1, diff: -2 },
                 scoring::gaps::Affine { open: -1, extend: -1 },
             ));
             test_free_gap_open(aligner);
+        }
+    }
+
+    pub mod alloptimal {
+        use std::iter::zip;
+
+        use super::*;
+
+        #[derive(Clone)]
+        struct Hit<'a> {
+            start: (usize, usize),
+            score: Score,
+            rle: &'a str,
+        }
+
+
+        struct Workload<'a> {
+            seq1: &'a [u8],
+            seq2: &'a [u8],
+            hits: Vec<Hit<'a>>,
+        }
+
+        fn ensure<'a>(aligner: &mut TestMultiAligner<'a>, w: &mut Workload<'a>) {
+            fn check<'a>(aligner: &mut TestMultiAligner<'a>, seq1: &'a [u8], seq2: &'a [u8], expected: &mut Vec<Hit>) {
+                expected.sort_by_key(|x| (x.score, x.start));
+
+                let mut hits = Vec::with_capacity(expected.len());
+                aligner.align(&seq1, &seq2, &mut hits);
+                hits.sort_by_key(|x| (x.score, (x.seq1.start, x.seq2.start)));
+
+                assert_eq!(hits.len(), expected.len());
+                for (alignment, expected) in zip(&hits, expected) {
+                    assert_eq!(alignment.score, expected.score);
+                    assert_eq!((alignment.seq1.start, alignment.seq2.start), expected.start);
+                    assert_eq!(alignment.rle(), expected.rle);
+                }
+            }
+
+            check(aligner, w.seq1, w.seq2, &mut w.hits);
+
+
+            let invrle: Vec<_> = w.hits.iter().map(|x| invrle(x.rle)).collect();
+            let mut invhits = w.hits.iter().enumerate().map(|(ind, x)|
+                Hit {
+                    start: (x.start.1, x.start.0),
+                    score: x.score,
+                    rle: &invrle[ind],
+                }
+            ).collect();
+            check(aligner, w.seq2, w.seq1, &mut invhits);
+        }
+
+
+        fn test_sequence_from_paper(aligner: &mut TestMultiAligner) {
+            aligner.set_scoring(scoring::compose(
+                scoring::symbols::MatchMismatch { same: 10, diff: -9 },
+                scoring::gaps::Affine { open: -20, extend: -20 },
+            ));
+            aligner.set_min_score_thr(21);
+            let mut w = Workload {
+                seq1: b"CCAATCTACTACTGCTTGCAGTAC",
+                seq2: b"AGTCCGAGGGCTACTCTACTGAAC",
+                hits: vec![
+                    // Hit { start: (17, 9), score: 20, rle: "2=" },
+                    // Hit { start: (19, 6), score: 20, rle: "2=" },
+                    // Hit { start: (5, 13), score: 20, rle: "2=" },
+                    // Hit { start: (5, 18), score: 20, rle: "2=" },
+                    // Hit { start: (2, 21), score: 20, rle: "2=" },
+                    // Hit { start: (10, 22), score: 20, rle: "2=" },
+
+                    Hit { start: (0, 3), score: 21, rle: "2=1X1=" },
+                    Hit { start: (2, 0), score: 21, rle: "1=1X2=" },
+                    Hit { start: (13, 9), score: 30, rle: "3=" },
+                    Hit { start: (21, 11), score: 30, rle: "3=" },
+                    Hit { start: (21, 16), score: 30, rle: "3=" },
+                    Hit { start: (11, 10), score: 31, rle: "2=1X2=" },
+                    Hit { start: (19, 0), score: 31, rle: "3=1X1=" },
+                    Hit { start: (0, 10), score: 62, rle: "1=1X1=1X6=" },
+                    Hit { start: (8, 15), score: 60, rle: "6=" },
+                    Hit { start: (5, 10), score: 61, rle: "5=1v2=1X2=" },
+                    Hit { start: (8, 10), score: 50, rle: "5=" },
+                ],
+            };
+            ensure(aligner, &mut w);
+            aligner.set_scoring(scoring::default());
+        }
+
+
+        pub fn test_all(aligner: &mut TestMultiAligner) {
+            aligner.set_scoring(scoring::compose(
+                scoring::symbols::MatchMismatch { same: 10, diff: -9 },
+                scoring::gaps::Affine { open: -20, extend: -20 },
+            ));
+            test_sequence_from_paper(aligner);
         }
     }
 }

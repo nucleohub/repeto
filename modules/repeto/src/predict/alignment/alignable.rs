@@ -23,6 +23,12 @@ pub struct Reversed<T: Alignable> {
     base: T,
 }
 
+impl<T: Alignable> Reversed<T> {
+    pub fn new(alignable: T) -> Self {
+        Self { base: alignable }
+    }
+}
+
 impl<T: Alignable> Alignable for Reversed<T> {
     #[inline(always)]
     fn len(&self) -> usize {

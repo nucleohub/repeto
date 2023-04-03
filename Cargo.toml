@@ -13,6 +13,3 @@ homepage = "TODO"
 repository = "TODO"
 license = "MIT"
 categories = ["science", "algorithms"]
-
-[workspace.dependencies]
-itertools = "0.10.5"

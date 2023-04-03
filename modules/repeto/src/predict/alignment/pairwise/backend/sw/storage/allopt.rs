@@ -19,8 +19,11 @@ impl Path {
     }
 
     fn extend(&mut self, row: usize, col: usize, newscore: Score) {
-        self.end = (row, col);
-        self.score = newscore;
+        // debug_assert!(self.score < newscore);
+        if newscore > self.score {
+            self.end = (row, col);
+            self.score = newscore;
+        }
 
         debug_assert!(self.start.0 <= self.end.0);
         debug_assert!(self.start.1 <= self.end.1);
@@ -45,15 +48,15 @@ pub struct AllOptimal {
 }
 
 impl AllOptimal {
-    pub fn new(rows: usize, minscore: Score) -> Self {
+    pub fn new() -> Self {
         Self {
-            minscore,
+            minscore: 0,
             diagonal: None,
             savediag: false,
-            cache: vec![None; rows],
+            cache: vec![None; 128],
             best_gap_row: None,
-            best_gap_col: vec![None; rows],
-            results: vec![Vec::new(); rows],
+            best_gap_col: vec![None; 128],
+            results: vec![Vec::new(); 128],
         }
     }
 
@@ -93,8 +96,8 @@ impl BestDirectionTracer for AllOptimal {
     fn gap_row(&mut self, row: usize, col: usize, score: Score) {
         let newdiag = self.cache[row].take();
 
-        debug_assert!(self.best_gap_row.as_ref().unwrap().end == (row, col));
-        debug_assert!(self.best_gap_row.as_ref().unwrap().score == score);
+        // debug_assert!(self.best_gap_row.as_ref().unwrap().end == (row, col));
+        // debug_assert!(self.best_gap_row.as_ref().unwrap().score == score);
         self.cache[row] = self.best_gap_row.clone();
 
         self.update_diagonal(newdiag);
@@ -104,8 +107,8 @@ impl BestDirectionTracer for AllOptimal {
     fn gap_col(&mut self, row: usize, col: usize, score: Score) {
         let newdiag = self.cache[row].take();
 
-        debug_assert!(self.best_gap_col[row].as_ref().unwrap().end == (row, col));
-        debug_assert!(self.best_gap_col[row].as_ref().unwrap().score == score);
+        // debug_assert!(self.best_gap_col[row].as_ref().unwrap().end == (row, col));
+        // debug_assert!(self.best_gap_col[row].as_ref().unwrap().score == score);
         self.cache[row] = self.best_gap_col[row].clone();
 
         self.update_diagonal(newdiag);
@@ -214,7 +217,20 @@ impl Storage for AllOptimal {
     }
 
     fn finalize(&mut self) -> Vec<AlignmentSeed> {
-        assert!(self.cache.is_empty() && !self.results.is_empty());
+        {
+            let mut cache = Vec::new();
+            std::mem::swap(&mut cache, &mut self.cache);
+
+            for x in &mut cache {
+                match x.take() {
+                    None => {}
+                    Some(x) => { self.save(x) }
+                }
+            };
+            std::mem::swap(&mut cache, &mut self.cache);
+        }
+
+
         self.results.iter().flatten().map(|x|
             AlignmentSeed { row: x.end.0, col: x.end.1, score: x.score }
         ).collect()

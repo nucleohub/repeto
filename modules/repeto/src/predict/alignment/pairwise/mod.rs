@@ -7,5 +7,5 @@ pub mod scoring;
 mod constraint;
 mod alignment;
 pub mod local;
-mod backend;
+pub mod backend;
 

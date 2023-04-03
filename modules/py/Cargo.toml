@@ -1,5 +1,5 @@
 [package]
-name = "repeto"
+name = "repeto-py"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
@@ -12,6 +12,10 @@ repository.workspace = true
 license.workspace = true
 categories.workspace = true
 
+[lib]
+name = "repeto"
+crate-type = ["cdylib"]
+
 [dependencies]
-itertools = "0.10.5"
-geo = "0.24.1"
+pyo3 = "0.18.1"
+repeto = { path = "../repeto" }
