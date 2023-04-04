@@ -19,5 +19,4 @@ crate-type = ["cdylib"]
 [dependencies]
 pyo3 = "0.18.1"
 itertools = { workspace = true }
-derive-getters = { workspace = true }
 repeto = { path = "../repeto" }

@@ -1,13 +1,16 @@
 use std::fmt::{Debug, Formatter};
+use std::iter::zip;
 
 use itertools::Itertools;
 use pyo3::{PyTraverseError, PyVisit};
 use pyo3::prelude::*;
+use pyo3::pyclass::CompareOp;
+use pyo3::types::PyTuple;
 
 use repeto::repeats;
 
-#[pyclass(get_all)]
-#[derive(Clone)]
+#[pyclass(get_all, module = "repeto")]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Range {
     start: isize,
     end: isize,
@@ -30,6 +33,18 @@ impl Range {
 
     pub fn __len__(&self) -> usize { (self.end - self.start) as usize }
 
+    pub fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
+        match op {
+            CompareOp::Eq => (self == other).into_py(py),
+            CompareOp::Ne => (self != other).into_py(py),
+            _ => py.NotImplemented(),
+        }
+    }
+
+    pub fn __getnewargs__(&self) -> PyResult<(isize, isize)> {
+        Ok((self.start, self.end))
+    }
+
     #[classattr]
     const __hash__: Option<Py<PyAny>> = None;
 }
@@ -40,7 +55,7 @@ impl Debug for Range {
     }
 }
 
-#[pyclass(get_all)]
+#[pyclass(get_all, module = "repeto")]
 #[derive(Clone)]
 pub struct RepeatSegment {
     left: Py<Range>,
@@ -88,6 +103,24 @@ impl RepeatSegment {
         self.left.borrow(py).__len__()
     }
 
+    pub fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyObject {
+        match op {
+            CompareOp::Eq => (
+                (*self.left.borrow(py) == *other.left.borrow(py)) &&
+                    (*self.right.borrow(py) == *other.right.borrow(py))
+            ).into_py(py),
+            CompareOp::Ne => (
+                (*self.left.borrow(py) != *other.left.borrow(py)) ||
+                    (*self.right.borrow(py) != *other.right.borrow(py))
+            ).into_py(py),
+            _ => py.NotImplemented(),
+        }
+    }
+
+    pub fn __getnewargs__(&self) -> PyResult<(&Py<Range>, &Py<Range>)> {
+        Ok((&self.left, &self.right))
+    }
+
     pub fn __traverse__(&self, visit: PyVisit<'_>) -> Result<(), PyTraverseError> {
         visit.call(&self.left)?;
         visit.call(&self.right)?;
@@ -106,7 +139,7 @@ impl Debug for RepeatSegment {
     }
 }
 
-#[pyclass(get_all)]
+#[pyclass(get_all, module = "repeto")]
 #[derive(Clone)]
 pub struct InvertedRepeat {
     pub segments: Vec<Py<RepeatSegment>>,
@@ -115,12 +148,17 @@ pub struct InvertedRepeat {
 #[pymethods]
 impl InvertedRepeat {
     #[new]
-    fn new(segments: Vec<Py<RepeatSegment>>, py: Python) -> Self {
+    pub fn new(segments: Vec<Py<RepeatSegment>>, py: Python) -> Self {
         assert!(!segments.is_empty(), "Inverted repeat must have at least one segment");
 
         // Segments shouldn't overlap
         for (prev, nxt) in segments.iter().tuple_windows() {
             let (p, n) = (prev.borrow(py), nxt.borrow(py));
+            assert!(
+                p.left.borrow(py).start < n.left.borrow(py).start,
+                "Inverted repeat segments must be ordered: {} & {}",
+                p.__repr__(py), n.__repr__(py)
+            );
             assert!(
                 (p.left.borrow(py).end <= n.left.borrow(py).start) &&
                     (p.right.borrow(py).start >= n.right.borrow(py).end),
@@ -138,6 +176,35 @@ impl InvertedRepeat {
         for s in &mut self.segments {
             s.borrow_mut(py).shift(py, shift);
         }
+    }
+
+    pub fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyResult<PyObject> {
+        Ok(match op {
+            CompareOp::Eq =>
+                if self.segments.len() == other.segments.len() {
+                    let mut alleq = true;
+                    for (a, b) in zip(&self.segments, &other.segments) {
+                        let (a, b) = (&*a.borrow(py), &*b.borrow(py));
+
+                        if !a.__richcmp__(b, CompareOp::Eq, py).is_true(py)? {
+                            alleq = false;
+                            break;
+                        }
+                    }
+
+                    alleq
+                } else {
+                    false
+                }.into_py(py),
+            CompareOp::Ne => (
+                !self.__richcmp__(other, CompareOp::Eq, py)?.is_true(py)?
+            ).into_py(py),
+            _ => py.NotImplemented(),
+        })
+    }
+
+    pub fn __getnewargs__<'py>(&'py self, py: Python<'py>) -> PyResult<&'py PyTuple> {
+        Ok(PyTuple::new(py, &[PyTuple::new(py, &self.segments)]))
     }
 
     pub fn __traverse__(&self, visit: PyVisit<'_>) -> Result<(), PyTraverseError> {

@@ -22,6 +22,8 @@ class Range:
 
     def __len__(self) -> int: ...
 
+    def __eq__(self, other) -> bool: ...
+
 
 class RepeatSegment:
     """
@@ -52,6 +54,8 @@ class RepeatSegment:
 
     def __len__(self) -> int: ...
 
+    def __eq__(self, other) -> bool: ...
+
 
 class InvertedRepeat:
     """
@@ -75,11 +79,13 @@ class InvertedRepeat:
         """
         pass
 
-    def shift(self, offset: int) -> None:
+    def shift(self, offset: int):
         """
         Shift the entire repeat by the given value(in place). Useful for mapping coordinates.
         """
         pass
+
+    def __eq__(self, other) -> bool: ...
 
 
 def predict(seq: bytes, min_score: int, min_matches_run: int) -> Tuple[List[InvertedRepeat], List[int]]:
