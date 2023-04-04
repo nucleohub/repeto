@@ -5,8 +5,8 @@ edition.workspace = true
 rust-version.workspace = true
 authors.workspace = true
 description.workspace = true
-documentation.workspace = true
-readme.workspace = true
+#documentation.workspace = true
+readme = "README.md"
 homepage.workspace = true
 repository.workspace = true
 license.workspace = true
@@ -18,4 +18,6 @@ crate-type = ["cdylib"]
 
 [dependencies]
 pyo3 = "0.18.1"
+itertools = { workspace = true }
+derive-getters = { workspace = true }
 repeto = { path = "../repeto" }

@@ -1,8 +1,12 @@
-use super::super::InvertedRepeat;
+use std::borrow::Borrow;
 use std::ops::Range;
 
+use itertools::Itertools;
+
+use super::inv;
+
 pub struct IndexAnchor {
-    pub pos: usize,
+    pub pos: isize,
     pub repeats: Vec<usize>,
 }
 
@@ -16,19 +20,27 @@ pub struct Index {
     revend: Vec<usize>,
 
     // InvertedRepeat blocks in each InvertedRepeat
-    blocks: Vec<Vec<Range<usize>>>,
+    blocks: Vec<Vec<Range<isize>>>,
 }
 
 impl Index {
-    pub fn new(invrep: &[InvertedRepeat]) -> Self {
-        let (starts, revstart) = Index::index(invrep, |x| x.brange().start);
-        let (ends, revend) = Index::index(invrep, |x| x.brange().end);
+    pub fn new<T: Borrow<inv::Repeat>>(invrep: &[T]) -> Self {
+        let (starts, revstart) = Index::index(invrep, |x| x.borrow().brange().start);
+        let (ends, revend) = Index::index(invrep, |x| x.borrow().brange().end);
 
         let blocks = invrep
             .iter()
             .map(|x| {
-                let mut blocks = x.blocks();
-                blocks.sort_by_key(|x| x.start);
+                let x = x.borrow();
+                let mut blocks = Vec::with_capacity(x.segments().len() * 2);
+
+                blocks.extend(x.segments().iter().map(|s| s.left().clone()));
+                blocks.extend(x.segments().iter().rev().map(|s| s.right().clone()));
+
+                debug_assert!(
+                    blocks.iter().tuple_windows().all(|(prv, nxt)| prv.end <= nxt.start)
+                );
+
                 blocks
             })
             .collect();
@@ -54,13 +66,13 @@ impl Index {
         (self.revstart[rnaid], self.revend[rnaid])
     }
 
-    pub fn blocks(&self, rnaid: usize) -> &[Range<usize>] {
+    pub fn blocks(&self, rnaid: usize) -> &[Range<isize>] {
         &self.blocks[rnaid]
     }
 
-    fn index(
-        rnas: &[InvertedRepeat],
-        key: impl for<'b> Fn(&'b InvertedRepeat) -> usize,
+    fn index<T: Borrow<inv::Repeat>>(
+        rnas: &[T],
+        key: impl for<'b> Fn(&'b T) -> isize,
     ) -> (Vec<IndexAnchor>, Vec<usize>) {
         let mut argsort = (0..rnas.len()).collect::<Vec<_>>();
         argsort.sort_by_key(|x| key(&rnas[*x]));
@@ -101,7 +113,7 @@ impl Index {
 pub mod bisect {
     use super::IndexAnchor;
 
-    pub fn right(data: &[IndexAnchor], pos: usize, mut lo: usize, mut hi: usize) -> usize {
+    pub fn right(data: &[IndexAnchor], pos: isize, mut lo: usize, mut hi: usize) -> usize {
         debug_assert!(lo <= hi && hi <= data.len());
         while lo < hi {
             let mid = (lo + hi) / 2;
@@ -114,7 +126,7 @@ pub mod bisect {
         lo
     }
 
-    pub fn left(data: &[IndexAnchor], pos: usize, mut lo: usize, mut hi: usize) -> usize {
+    pub fn left(data: &[IndexAnchor], pos: isize, mut lo: usize, mut hi: usize) -> usize {
         debug_assert!(lo <= hi && hi <= data.len());
         while lo < hi {
             let mid = (lo + hi) / 2;

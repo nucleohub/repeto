@@ -1,4 +1,5 @@
-use super::InvertedRepeat;
+use std::borrow::Borrow;
+use super::repeats::inv;
 
 mod dynprog;
 mod index;
@@ -6,17 +7,17 @@ mod trace;
 
 pub type Score = i32;
 
-pub fn run<'a, 'b>(dsrna: &'a [InvertedRepeat], scores: &'b [Score]) -> (Vec<&'a InvertedRepeat>, Score) {
-    assert_eq!(dsrna.len(), scores.len());
+pub fn run<'a, 'b, T: Borrow<inv::Repeat>>(ir: &'a [T], scores: &'b [Score]) -> (Vec<&'a T>, Score) {
+    assert_eq!(ir.len(), scores.len());
 
     // Trivial solutions
-    if dsrna.is_empty() || (dsrna.len() == 1 && scores[0] == 0) {
+    if ir.is_empty() || (ir.len() == 1 && scores[0] == 0) {
         return (vec![], 0);
-    } else if dsrna.len() == 1 && scores[0] > 0 {
-        return (vec![&dsrna[0]], scores[0]);
+    } else if ir.len() == 1 && scores[0] > 0 {
+        return (vec![&ir[0]], scores[0]);
     }
 
-    dynprog::DynProgSolution::new().solve(dsrna, scores)
+    dynprog::DynProgSolution::new().solve(ir, scores)
 }
 
 #[cfg(test)]
@@ -29,7 +30,7 @@ mod tests {
 
     #[derive(Debug)]
     struct TestCase {
-        pub dsrna: Vec<(Score, Vec<(Range<usize>, Range<usize>)>)>,
+        pub dsrna: Vec<(Score, Vec<(Range<isize>, Range<isize>)>)>,
         pub expdsrna: Vec<usize>,
     }
 
@@ -41,7 +42,7 @@ mod tests {
         for (score, segments) in tcase.dsrna {
             scores.push(score);
             let segments = segments.into_iter().map(|x| x.into()).collect();
-            transformed.push(InvertedRepeat::new(segments));
+            transformed.push(inv::Repeat::new(segments));
         }
 
         let expscore = tcase.expdsrna.iter().map(|x| scores[*x]).sum();
@@ -53,7 +54,7 @@ mod tests {
             .iter()
             .map(|x| &transformed[*x])
             .collect_vec();
-        let key = |x: &&InvertedRepeat| (x.brange().start, x.brange().end);
+        let key = |x: &&inv::Repeat| (x.brange().start, x.brange().end);
         result.sort_by_key(key);
         expected.sort_by_key(key);
         debug_assert!(
@@ -112,7 +113,7 @@ mod tests {
     fn no_overlap_complex() {
         let workloads = [TestCase {
             dsrna: vec![
-                (1, vec![(0..2, 3..5), (6..8, 9..11)]),
+                (1, vec![(0..2, 9..11), (3..5, 6..8)]),
                 (3, vec![(15..30, 45..60), (35..37, 40..42)]),
             ],
             expdsrna: vec![0, 1],

@@ -1,8 +1,9 @@
+use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use std::ops::Range;
 
 use super::trace::TraceCell;
-use super::super::InvertedRepeat;
+use super::inv;
 use itertools::Itertools;
 
 use super::Score;
@@ -18,9 +19,9 @@ use super::{index, trace};
 // * f(s, e - 1)
 // * max of the following:
 //   * f(s, start(RNA)) + weight(RNA) + sum[f(start(gap_i), end(gap_i)) for all gaps in RNA where end(RNA) == e]
-struct Workload<'a> {
+struct Workload<'a, T: Borrow<inv::Repeat>> {
     pub index: index::Index,
-    pub invrep: &'a [InvertedRepeat],
+    pub invrep: &'a [T],
     pub scores: &'a [Score],
 }
 
@@ -37,11 +38,9 @@ impl DynProgSolution {
         }
     }
 
-    pub fn solve<'a, 'b>(
-        &mut self,
-        invrep: &'a [InvertedRepeat],
-        scores: &'b [Score],
-    ) -> (Vec<&'a InvertedRepeat>, Score) {
+    pub fn solve<'a, 'b, T: Borrow<inv::Repeat>>(
+        &mut self, invrep: &'a [T], scores: &'b [Score]
+    ) -> (Vec<&'a T>, Score) {
         debug_assert!(invrep.len() == scores.len());
         let w = Workload {
             index: index::Index::new(invrep),
@@ -70,7 +69,7 @@ impl DynProgSolution {
         (optimum, score)
     }
 
-    fn subsolve(&mut self, w: &Workload, sind: usize, eind: usize) -> Score {
+    fn subsolve<T: Borrow<inv::Repeat>>(&mut self, w: &Workload<T>, sind: usize, eind: usize) -> Score {
         // Sanity check
         debug_assert!(sind <= w.index.starts().len() && eind <= w.index.ends().len());
 
@@ -116,8 +115,8 @@ impl DynProgSolution {
             debug_assert!(
                 rnasind >= sind
                     && rnaeind == eind
-                    && w.index.starts()[sind].pos <= rna.brange().start
-                    && w.index.ends()[eind].pos >= rna.brange().end
+                    && w.index.starts()[sind].pos <= rna.borrow().brange().start
+                    && w.index.ends()[eind].pos >= rna.borrow().brange().end
             );
 
             // Include the best combination of 'embeddable' RNAs
@@ -125,10 +124,10 @@ impl DynProgSolution {
             score += gscore;
 
             // Find the closest end that doesn't contain the current rnafold
-            let mut preeind = index::bisect::right(w.index.ends(), rna.brange().start, 0, eind);
+            let mut preeind = index::bisect::right(w.index.ends(), rna.borrow().brange().start, 0, eind);
             if preeind != 0 {
                 preeind -= 1;
-                debug_assert!(rna.brange().start >= w.index.ends()[preeind].pos);
+                debug_assert!(rna.borrow().brange().start >= w.index.ends()[preeind].pos);
 
                 // Can we include it?
                 if w.index.ends()[preeind].pos > w.index.starts()[sind].pos {
@@ -165,10 +164,10 @@ impl DynProgSolution {
         };
     }
 
-    fn gapsolve(
+    fn gapsolve<T: Borrow<inv::Repeat>>(
         &mut self,
-        w: &Workload,
-        blocks: &[Range<usize>],
+        w: &Workload<T>,
+        blocks: &[Range<isize>],
         mut minsind: usize,
         maxeind: usize,
     ) -> (Score, Vec<(usize, usize)>) {
