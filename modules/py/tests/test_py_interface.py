@@ -77,9 +77,12 @@ def test_repeat_segment(left, right):
 def test_inverted_repeat(segments):
     def dotest(repeat, segments):
         assert repeat.brange() == repeto.Range(segments[0].left.start, segments[0].right.end)
+        assert repeat.seqranges() == \
+               sorted([x.left for x in segments] + [x.right for x in segments], key=lambda x: x.start)
         assert repeat.segments == segments
         assert repeat == repeto.InvertedRepeat(segments)
         assert repeat == repeat
+        assert len(repeat) == sum(len(x) for x in segments)
 
     segments = [
         repeto.RepeatSegment(repeto.Range(r[0], r[1]), repeto.Range(l[0], l[1]))

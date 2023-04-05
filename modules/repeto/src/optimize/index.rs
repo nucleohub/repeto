@@ -31,12 +31,7 @@ impl Index {
         let blocks = invrep
             .iter()
             .map(|x| {
-                let x = x.borrow();
-                let mut blocks = Vec::with_capacity(x.segments().len() * 2);
-
-                blocks.extend(x.segments().iter().map(|s| s.left().clone()));
-                blocks.extend(x.segments().iter().rev().map(|s| s.right().clone()));
-
+                let blocks: Vec<_> = x.borrow().seqranges().cloned().collect();
                 debug_assert!(
                     blocks.iter().tuple_windows().all(|(prv, nxt)| prv.end <= nxt.start)
                 );

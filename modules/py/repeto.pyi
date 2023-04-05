@@ -85,6 +85,18 @@ class InvertedRepeat:
         """
         pass
 
+    def seqranges(self) -> List[Range]:
+        """
+        Ordered sequence blocks, i.e. sequence ranges, that underlay the inverted repeat.
+        """
+        pass
+
+    def __len__(self) -> int:
+        """
+        The length of inverted repeats is defined as the total number of base pairs of the underlying segments.
+        """
+        pass
+
     def __eq__(self, other) -> bool: ...
 
 

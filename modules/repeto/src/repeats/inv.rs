@@ -2,7 +2,7 @@ use std::fmt::{Debug, Formatter};
 use std::ops::Range;
 
 use derive_getters::{Dissolve, Getters};
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 
 #[derive(Eq, PartialEq, Hash, Clone, Getters, Dissolve)]
 pub struct Segment {
@@ -25,6 +25,8 @@ impl Segment {
 
     pub fn len(&self) -> usize { (self.left.end - self.left.start) as usize }
 
+    pub fn brange(&self) -> Range<isize> { self.left.start..self.right.end }
+
     pub fn shift(&mut self, shift: isize) {
         self.left.start += shift;
         self.left.end += shift;
@@ -32,8 +34,6 @@ impl Segment {
         self.right.start += shift;
         self.right.end += shift;
     }
-
-    pub fn brange(&self) -> Range<isize> { self.left.start..self.right.end }
 }
 
 impl Debug for Segment {
@@ -71,9 +71,19 @@ impl Repeat {
         Self { segments }
     }
 
+    pub fn len(&self) -> usize { self.segments.iter().map(|x| x.len()).sum() }
+
+    pub fn brange(&self) -> Range<isize> { self.segments[0].brange() }
+
     pub fn shift(&mut self, shift: isize) {
         for x in &mut self.segments { x.shift(shift) };
     }
 
-    pub fn brange(&self) -> Range<isize> { self.segments[0].brange() }
+    pub fn seqranges(&self) -> impl Iterator<Item=&Range<isize>> {
+        chain(
+            self.segments.iter().map(|x| x.left()),
+            self.segments.iter().rev().map(|x| x.right()),
+        )
+    }
+
 }

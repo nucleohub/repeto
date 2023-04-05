@@ -1,7 +1,7 @@
 use std::fmt::{Debug, Formatter};
 use std::iter::zip;
 
-use itertools::Itertools;
+use itertools::{chain, Itertools};
 use pyo3::{PyTraverseError, PyVisit};
 use pyo3::prelude::*;
 use pyo3::pyclass::CompareOp;
@@ -176,6 +176,17 @@ impl InvertedRepeat {
         for s in &mut self.segments {
             s.borrow_mut(py).shift(py, shift);
         }
+    }
+
+    pub fn seqranges(&self, py: Python) -> Vec<Py<Range>> {
+        chain(
+            self.segments.iter().map(|x| x.borrow(py).left.clone_ref(py)),
+            self.segments.iter().rev().map(|x| x.borrow(py).right.clone_ref(py)),
+        ).collect()
+    }
+
+    pub fn __len__(&self, py: Python) -> usize {
+        self.segments.iter().map(|x| x.borrow(py).__len__(py)).sum()
     }
 
     pub fn __richcmp__(&self, other: &Self, op: CompareOp, py: Python<'_>) -> PyResult<PyObject> {
