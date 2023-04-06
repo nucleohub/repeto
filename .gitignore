@@ -1,4 +1,5 @@
-/target
+# Rust/Cargo build files
+target
 Cargo.lock
 
 # Byte-compiled / optimized / DLL files
@@ -62,6 +63,9 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# mdBook
+book
 
 # PyCharm
 .idea/
