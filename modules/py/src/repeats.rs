@@ -185,6 +185,30 @@ impl InvertedRepeat {
         ).collect()
     }
 
+    #[pyo3(
+        signature = (contig, *args, name = ".", score = 0, strand = ".", color = "0,0,0"),
+        text_signature = None
+    )]
+    pub fn to_bed12(&self, py: Python, contig: &str,
+                    args: &PyTuple, name: &str, score: u16, strand: &str, color: &str) -> String {
+        assert_eq!(args.len(), 0, "to_bed12 doesn't support positional arguments except 'contig'.");
+        assert!(score <= 1000, "Score must be from 0 to 1000");
+
+        let range = self.brange(py);
+        let (block_sizes, block_starts): (Vec<usize>, Vec<isize>) = self.seqranges(py)
+            .into_iter()
+            .map(|x| (x.borrow(py).__len__(), x.borrow(py).start - range.start))
+            .unzip();
+        let block_sizes = block_sizes.into_iter().join(",");
+        let block_starts = block_starts.into_iter().join(",");
+
+        format!(
+            "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
+            contig, range.start, range.end, name, score, strand, range.start, range.end, color,
+            self.segments.len() * 2, block_sizes, block_starts
+        )
+    }
+
     pub fn __len__(&self, py: Python) -> usize {
         self.segments.iter().map(|x| x.borrow(py).__len__(py)).sum()
     }

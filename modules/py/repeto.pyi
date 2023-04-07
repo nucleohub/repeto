@@ -91,6 +91,13 @@ class InvertedRepeat:
         """
         pass
 
+    def to_bed12(self, contig: str, *args,
+                 name: str = ".", score: int = 0, strand: str = ".", color: str = "0,0,0") -> str:
+        """
+        Convert inverted repeat to a BED12 record. All arguments except the contig should be passed as kwargs
+        """
+        pass
+
     def __len__(self) -> int:
         """
         The length of inverted repeats is defined as the total number of base pairs of the underlying segments.

@@ -3,7 +3,7 @@
 [Introduction](README.md)
 - [Installing repeto](install.md)
 - [Python interface](py/interface.md)
-  - [Tutorial](py/basic.md)
+  - [Tutorial](py/tutorial.md)
 - [Algorithm]()
   - [Repeats prediction]()
   - [Matching optimization]()

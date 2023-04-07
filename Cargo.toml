@@ -2,7 +2,7 @@
 members = ["modules/*"]
 
 [workspace.package]
-version = "0.0.6"
+version = "0.0.7"
 edition = "2021"
 rust-version = "1.67.0"
 authors = ["Aleksandr Fedorov <anfedorov@hse.ru>"]
