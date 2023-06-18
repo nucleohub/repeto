@@ -16,4 +16,5 @@ categories = ["science", "algorithms"]
 
 [workspace.dependencies]
 itertools = "0.10.5"
-derive-getters = "0.2.0"
+derive-getters = "0.3.0"
+num = "0.4"

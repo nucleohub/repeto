@@ -4,86 +4,131 @@ use std::ops::Range;
 use derive_getters::{Dissolve, Getters};
 use itertools::{chain, Itertools};
 
+pub use super::Coordinate;
+
 #[derive(Eq, PartialEq, Hash, Clone, Getters, Dissolve)]
-pub struct Segment {
-    left: Range<isize>,
-    right: Range<isize>,
+pub struct Segment<Idx: Coordinate> {
+    left: Range<Idx>,
+    right: Range<Idx>,
 }
 
-impl Segment {
-    pub fn new(left: Range<isize>, right: Range<isize>) -> Self {
-        assert!(left.start < left.end, "Sequence range start must be < end: {:?}", left);
-        assert!(right.start < right.end, "Sequence range start must be < end: {:?}", right);
+impl<Idx: Coordinate> Segment<Idx> {
+    pub fn new(left: Range<Idx>, right: Range<Idx>) -> Self
+        where Idx: Debug
+    {
+        assert!(left.start < left.end, "Sequence range start must be < end: {left:?}");
+        assert!(right.start < right.end, "Sequence range start must be < end: {right:?}");
 
-        assert_eq!(left.end - left.start, right.end - right.start, "Repeat segments' length must be equal");
+        assert_eq!(
+            left.end - left.start, right.end - right.start,
+            "Repeat segments' length must be equal: {left:?} vs {right:?}"
+        );
         assert!(
             left.start < left.end && left.end <= right.start && right.start < right.end,
-            "Repeat segments must not overlap: {:?} vs {:?}", left, right
+            "Repeat segments must not overlap: {left:?} vs {right:?}"
         );
         Self { left, right }
     }
 
-    pub fn len(&self) -> usize { (self.left.end - self.left.start) as usize }
+    fn inner_gap(&self) -> Idx { self.right().start - self.left().end }
 
-    pub fn brange(&self) -> Range<isize> { self.left.start..self.right.end }
+    fn seqlen(&self) -> Idx { (self.left().end - self.left().start).shl(1) }
 
-    pub fn shift(&mut self, shift: isize) {
-        self.left.start += shift;
-        self.left.end += shift;
+    fn brange(&self) -> Range<Idx> { self.left().start..self.right().end }
 
-        self.right.start += shift;
-        self.right.end += shift;
+    fn shift(&mut self, shift: &Idx) {
+        self.left.start = self.left.start + *shift;
+        self.left.end = self.left.end + *shift;
+
+        self.right.start = self.right.start + *shift;
+        self.right.end = self.right.end + *shift;
     }
 }
 
-impl Debug for Segment {
+
+impl<Idx: Coordinate + Debug> Debug for Segment<Idx> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
-            f, "inv::Repeat [{}, {}) <=> [{}, {})",
+            f, "inv::Segment [{:?}-{:?}) <=> [{:?}-{:?})",
             self.left.start, self.left.end, self.right.start, self.right.end
         )
     }
 }
 
-impl From<(Range<isize>, Range<isize>)> for Segment {
-    fn from(value: (Range<isize>, Range<isize>)) -> Self {
+impl<Idx: Coordinate> From<(Range<Idx>, Range<Idx>)> for Segment<Idx> {
+    fn from(value: (Range<Idx>, Range<Idx>)) -> Self {
         Self { left: value.0, right: value.1 }
     }
 }
 
-#[derive(Eq, PartialEq, Hash, Clone, Debug, Getters, Dissolve)]
-pub struct Repeat {
-    segments: Vec<Segment>,
+
+#[derive(Eq, PartialEq, Hash, Clone, Getters, Dissolve)]
+pub struct Repeat<Idx: Coordinate> {
+    segments: Vec<Segment<Idx>>,
 }
 
-impl Repeat {
-    pub fn new(segments: Vec<Segment>) -> Self {
+impl<Idx: Coordinate> Repeat<Idx> {
+    pub fn new(segments: Vec<Segment<Idx>>) -> Self
+        where Idx: Debug
+    {
         assert!(!segments.is_empty(), "Inverted repeat must have at least one segment");
         // segments.sort_by_key(|x| x.left.start);
 
         for (prev, nxt) in segments.iter().tuple_windows() {
             assert!(
                 (prev.left.end <= nxt.left.start) && (prev.right.start >= nxt.right.end),
-                "Segments shouldn't overlap: {:?} vs {:?}", prev, nxt
+                "Segments must be ordered from outer to inner and must not overlap: {prev:?} vs {nxt:?}"
             );
         }
 
         Self { segments }
     }
 
-    pub fn len(&self) -> usize { self.segments.iter().map(|x| x.len()).sum() }
-
-    pub fn brange(&self) -> Range<isize> { self.segments[0].brange() }
-
-    pub fn shift(&mut self, shift: isize) {
-        for x in &mut self.segments { x.shift(shift) };
+    pub fn seqlen(&self) -> Idx {
+        let mut seqlen = Idx::zero();
+        for s in self.segments().iter().map(|x| x.seqlen()) {
+            seqlen += s;
+        }
+        return seqlen;
     }
 
-    pub fn seqranges(&self) -> impl Iterator<Item=&Range<isize>> {
+    pub fn inner_gap(&self) -> Idx { self.segments().last().unwrap().inner_gap() }
+
+    pub fn left_brange(&self) -> Range<Idx> {
+        Range {
+            start: self.segments()[0].left().start,
+            end: self.segments().last().unwrap().left().end,
+        }
+    }
+
+    pub fn right_brange(&self) -> Range<Idx> {
+        Range {
+            start: self.segments().last().unwrap().right().start,
+            end: self.segments()[0].right().end,
+        }
+    }
+
+    pub fn brange(&self) -> Range<Idx> { self.segments()[0].brange() }
+
+    pub fn shift(&mut self, shift: &Idx) {
+        for x in &mut self.segments { x.shift(shift) }
+    }
+
+    pub fn seqranges(&self) -> impl Iterator<Item=&'_ Range<Idx>>
+    {
         chain(
-            self.segments.iter().map(|x| x.left()),
-            self.segments.iter().rev().map(|x| x.right()),
+            self.segments().iter().map(|x| x.left()),
+            self.segments().iter().rev().map(|x| x.right()),
         )
     }
+}
 
+impl<Idx: Coordinate + Debug> Debug for Repeat<Idx> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f, "inv::Repeat [{:?}-{:?}) <=> [{:?}-{:?})",
+            self.left_brange().start, self.left_brange().end,
+            self.right_brange().start, self.right_brange().end
+        )
+    }
 }

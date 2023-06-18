@@ -1,4 +1,5 @@
 use std::borrow::Borrow;
+
 use super::repeats::inv;
 
 mod dynprog;
@@ -7,7 +8,11 @@ mod trace;
 
 pub type Score = i32;
 
-pub fn run<'a, 'b, T: Borrow<inv::Repeat>>(ir: &'a [T], scores: &'b [Score]) -> (Vec<&'a T>, Score) {
+pub fn run<'a, 'b, Idx, T>(ir: &'a [T], scores: &'b [Score]) -> (Vec<&'a T>, Score)
+    where
+        Idx: inv::Coordinate,
+        T: Borrow<inv::Repeat<Idx>>
+{
     assert_eq!(ir.len(), scores.len());
 
     // Trivial solutions
@@ -54,7 +59,7 @@ mod tests {
             .iter()
             .map(|x| &transformed[*x])
             .collect_vec();
-        let key = |x: &&inv::Repeat| (x.brange().start, x.brange().end);
+        let key = |x: &&inv::Repeat<isize>| (x.brange().start, x.brange().end);
         result.sort_by_key(key);
         expected.sort_by_key(key);
         debug_assert!(

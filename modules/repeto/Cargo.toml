@@ -15,4 +15,5 @@ categories.workspace = true
 [dependencies]
 itertools = { workspace = true }
 derive-getters = { workspace = true }
-biobit-alignment = { git = "https://github.com/nucleohub/biobit", rev = "725c776b3b80d0c69908ddd0d697d071712e94fc"}
+num = { workspace = true }
+biobit-alignment = { git = "https://github.com/nucleohub/biobit", rev = "725c776b3b80d0c69908ddd0d697d071712e94fc" }

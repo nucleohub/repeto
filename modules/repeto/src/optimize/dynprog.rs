@@ -2,12 +2,12 @@ use std::borrow::Borrow;
 use std::collections::BTreeMap;
 use std::ops::Range;
 
-use super::trace::TraceCell;
-use super::inv;
 use itertools::Itertools;
 
-use super::Score;
 use super::{index, trace};
+use super::inv;
+use super::Score;
+use super::trace::TraceCell;
 
 // General rules:
 // 1. If a hypothesis is included -> the best subset of its embedded hypothesis is also included
@@ -19,8 +19,12 @@ use super::{index, trace};
 // * f(s, e - 1)
 // * max of the following:
 //   * f(s, start(RNA)) + weight(RNA) + sum[f(start(gap_i), end(gap_i)) for all gaps in RNA where end(RNA) == e]
-struct Workload<'a, T: Borrow<inv::Repeat>> {
-    pub index: index::Index,
+struct Workload<'a, Idx, T>
+    where
+        Idx: inv::Coordinate,
+        T: Borrow<inv::Repeat<Idx>>
+{
+    pub index: index::Index<Idx>,
     pub invrep: &'a [T],
     pub scores: &'a [Score],
 }
@@ -38,9 +42,13 @@ impl DynProgSolution {
         }
     }
 
-    pub fn solve<'a, 'b, T: Borrow<inv::Repeat>>(
-        &mut self, invrep: &'a [T], scores: &'b [Score]
-    ) -> (Vec<&'a T>, Score) {
+    pub fn solve<'a, 'b, Idx, T>(
+        &mut self, invrep: &'a [T], scores: &'b [Score],
+    ) -> (Vec<&'a T>, Score)
+        where
+            Idx: inv::Coordinate,
+            T: Borrow<inv::Repeat<Idx>>
+    {
         debug_assert!(invrep.len() == scores.len());
         let w = Workload {
             index: index::Index::new(invrep),
@@ -69,7 +77,11 @@ impl DynProgSolution {
         (optimum, score)
     }
 
-    fn subsolve<T: Borrow<inv::Repeat>>(&mut self, w: &Workload<T>, sind: usize, eind: usize) -> Score {
+    fn subsolve<Idx, T>(&mut self, w: &Workload<Idx, T>, sind: usize, eind: usize) -> Score
+        where
+            Idx: inv::Coordinate,
+            T: Borrow<inv::Repeat<Idx>>
+    {
         // Sanity check
         debug_assert!(sind <= w.index.starts().len() && eind <= w.index.ends().len());
 
@@ -164,13 +176,17 @@ impl DynProgSolution {
         };
     }
 
-    fn gapsolve<T: Borrow<inv::Repeat>>(
+    fn gapsolve<Idx, T>(
         &mut self,
-        w: &Workload<T>,
-        blocks: &[Range<isize>],
+        w: &Workload<Idx, T>,
+        blocks: &[Range<Idx>],
         mut minsind: usize,
         maxeind: usize,
-    ) -> (Score, Vec<(usize, usize)>) {
+    ) -> (Score, Vec<(usize, usize)>)
+        where
+            Idx: inv::Coordinate,
+            T: Borrow<inv::Repeat<Idx>>
+    {
         // Blocks are sorted and for each start-end gap between adjacent blocks we need to find
         // the best possible sind/eind so that: minsind < start(sind) <= start < end <= end(eind) < maxend
 

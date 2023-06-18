@@ -5,26 +5,29 @@ use itertools::Itertools;
 
 use super::inv;
 
-pub struct IndexAnchor {
-    pub pos: isize,
+pub struct IndexAnchor<Idx: inv::Coordinate> {
+    pub pos: Idx,
     pub repeats: Vec<usize>,
 }
 
-pub struct Index {
+pub struct Index<Idx: inv::Coordinate> {
     // Sorted rnas based on their start or end positions
-    starts: Vec<IndexAnchor>,
-    ends: Vec<IndexAnchor>,
+    starts: Vec<IndexAnchor<Idx>>,
+    ends: Vec<IndexAnchor<Idx>>,
 
     // RNA id -> start & end index
     revstart: Vec<usize>,
     revend: Vec<usize>,
 
     // InvertedRepeat blocks in each InvertedRepeat
-    blocks: Vec<Vec<Range<isize>>>,
+    blocks: Vec<Vec<Range<Idx>>>,
 }
 
-impl Index {
-    pub fn new<T: Borrow<inv::Repeat>>(invrep: &[T]) -> Self {
+impl<Idx: inv::Coordinate> Index<Idx> {
+    pub fn new<T>(invrep: &[T]) -> Self
+        where
+            T: Borrow<inv::Repeat<Idx>>
+    {
         let (starts, revstart) = Index::index(invrep, |x| x.borrow().brange().start);
         let (ends, revend) = Index::index(invrep, |x| x.borrow().brange().end);
 
@@ -49,11 +52,11 @@ impl Index {
         }
     }
 
-    pub fn ends(&self) -> &[IndexAnchor] {
+    pub fn ends(&self) -> &[IndexAnchor<Idx>] {
         &self.ends
     }
 
-    pub fn starts(&self) -> &[IndexAnchor] {
+    pub fn starts(&self) -> &[IndexAnchor<Idx>] {
         &self.starts
     }
 
@@ -61,14 +64,14 @@ impl Index {
         (self.revstart[rnaid], self.revend[rnaid])
     }
 
-    pub fn blocks(&self, rnaid: usize) -> &[Range<isize>] {
+    pub fn blocks(&self, rnaid: usize) -> &[Range<Idx>] {
         &self.blocks[rnaid]
     }
 
-    fn index<T: Borrow<inv::Repeat>>(
+    fn index<T: Borrow<inv::Repeat<Idx>>>(
         rnas: &[T],
-        key: impl for<'b> Fn(&'b T) -> isize,
-    ) -> (Vec<IndexAnchor>, Vec<usize>) {
+        key: impl for<'b> Fn(&'b T) -> Idx,
+    ) -> (Vec<IndexAnchor<Idx>>, Vec<usize>) {
         let mut argsort = (0..rnas.len()).collect::<Vec<_>>();
         argsort.sort_by_key(|x| key(&rnas[*x]));
 
@@ -106,9 +109,9 @@ impl Index {
 }
 
 pub mod bisect {
-    use super::IndexAnchor;
+    use super::{IndexAnchor, inv};
 
-    pub fn right(data: &[IndexAnchor], pos: isize, mut lo: usize, mut hi: usize) -> usize {
+    pub fn right<Idx: inv::Coordinate>(data: &[IndexAnchor<Idx>], pos: Idx, mut lo: usize, mut hi: usize) -> usize {
         debug_assert!(lo <= hi && hi <= data.len());
         while lo < hi {
             let mid = (lo + hi) / 2;
@@ -121,7 +124,7 @@ pub mod bisect {
         lo
     }
 
-    pub fn left(data: &[IndexAnchor], pos: isize, mut lo: usize, mut hi: usize) -> usize {
+    pub fn left<Idx: inv::Coordinate>(data: &[IndexAnchor<Idx>], pos: Idx, mut lo: usize, mut hi: usize) -> usize {
         debug_assert!(lo <= hi && hi <= data.len());
         while lo < hi {
             let mid = (lo + hi) / 2;

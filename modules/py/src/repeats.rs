@@ -257,7 +257,7 @@ impl InvertedRepeat {
 
 
 impl InvertedRepeat {
-    pub fn to_rs(&self, py: Python) -> repeats::inv::Repeat {
+    pub fn to_rs(&self, py: Python) -> repeats::inv::Repeat<isize> {
         let segments: Vec<_> = self.segments.iter().map(|x| {
             let x = x.borrow(py);
             let (left, right) = (x.left.borrow(py), x.right.borrow(py));
@@ -266,7 +266,7 @@ impl InvertedRepeat {
         repeats::inv::Repeat::new(segments)
     }
 
-    pub fn from_rs(ir: &repeats::inv::Repeat, py: Python) -> PyResult<Self> {
+    pub fn from_rs(ir: &repeats::inv::Repeat<isize>, py: Python) -> PyResult<Self> {
         let segments: PyResult<Vec<Py<RepeatSegment>>> = ir.segments().iter().map(|s| {
             Py::new(py, RepeatSegment {
                 left: Py::new(py, Range {

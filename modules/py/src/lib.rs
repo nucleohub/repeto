@@ -19,7 +19,7 @@ pub fn predict(seq: &[u8], min_score: i64, min_matches_run: usize) -> PyResult<(
 
 #[pyfunction]
 pub fn optimize(ir: Vec<InvertedRepeat>, scores: Vec<i32>) -> PyResult<(Vec<InvertedRepeat>, i32)> {
-    let ir = Python::with_gil(|py| -> Vec<repeto::repeats::inv::Repeat> {
+    let ir = Python::with_gil(|py| -> Vec<repeto::repeats::inv::Repeat<isize>> {
         ir.into_iter().map(|x| { x.to_rs(py) }).collect()
     });
 

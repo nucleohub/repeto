@@ -5,7 +5,7 @@ use biobit_alignment::pairwise::local::{MultiAligner, MultiAlignerConfig};
 
 use super::repeats::inv;
 
-pub fn run(seq: &[u8], min_score: i64, min_matches_run: usize) -> (Vec<inv::Repeat>, Vec<i64>) {
+pub fn run(seq: &[u8], min_score: i64, min_matches_run: usize) -> (Vec<inv::Repeat<isize>>, Vec<i64>) {
     let mut aligner: backend::sw::Engine<_, _, _> = backend::sw::Engine::new(
         backend::sw::storage::AllOptimal::new(),
         backend::sw::traceback::TraceMatrix::new(),
