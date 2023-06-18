@@ -1,10 +1,10 @@
-# Installing _repeto_
+# Installing repeto
 
 You can install **repeto** in a few different ways, depending on your needs:
 
 ### Rust library
 
-Currently, repeto isn't available as a package on [crates.io](https://crates.io). However, you can instruct Cargo to
+Currently, repeto **isn't** available as a package on [crates.io](https://crates.io). However, you can instruct Cargo to
 depend on it via the GitHub repository. Here's how:
 
 ```toml
@@ -23,5 +23,5 @@ python -m pip install repeto
 ```
 
 If you're using a different platform or interpreter, pip will try to build repeto from the source code.
-To do this, you'll need a working Rust/Cargo toolchain. You can find installation instructions for Rust
-at [this](https://www.rust-lang.org/tools/install) link. Note that the minimum supported Python version is 3.7.
+To do this, you'll need a working Rust/Cargo toolchain ([link](https://www.rust-lang.org/tools/install)). 
+Note that the minimum supported Python version is 3.7.

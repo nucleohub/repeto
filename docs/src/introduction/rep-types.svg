@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="33.966782mm"
+   height="9.705905mm"
+   viewBox="0 0 33.966782 9.705905"
+   version="1.1"
+   id="svg5"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   sodipodi:docname="rep-types.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:document-units="mm"
+     showgrid="true"
+     inkscape:zoom="1"
+     inkscape:cx="-138.5"
+     inkscape:cy="-64.5"
+     inkscape:window-width="1426"
+     inkscape:window-height="936"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1"
+     fit-margin-top="0"
+     fit-margin-left="0"
+     fit-margin-right="0"
+     fit-margin-bottom="0">
+    <inkscape:grid
+       type="xygrid"
+       id="grid61053"
+       originx="-6.614592"
+       originy="-0.429949" />
+  </sodipodi:namedview>
+  <defs
+     id="defs2" />
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-105.35562,-60.803363)">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#4a4a4a;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.79375;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 118.03089,63.401195 h 8.6709"
+       id="path65573" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#4a4a4a;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.79375;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 118.03089,68.017863 h 8.6709"
+       id="path65573-1" />
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.264583;paint-order:stroke fill markers"
+       x="127.86518"
+       y="64.556938"
+       id="text3742-7-8-1"><tspan
+         sodipodi:role="line"
+         id="tspan3740-5-3-8"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="127.86518"
+         y="64.556938">TCGCAT</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.264583;paint-order:stroke fill markers"
+       x="127.9107"
+       y="69.173607"
+       id="text3742-7-8"><tspan
+         sodipodi:role="line"
+         id="tspan3740-5-3"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="127.9107"
+         y="69.173607">AGCGTA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.264583;paint-order:stroke fill markers"
+       x="105.29826"
+       y="64.556938"
+       id="text3742-7"><tspan
+         sodipodi:role="line"
+         id="tspan3740-5"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="105.29826"
+         y="64.556938">ATGCGA</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0f0f0f;fill-opacity:1;stroke:none;stroke-width:0.264583;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:0.264583, 0.264583;paint-order:stroke fill markers"
+       x="105.28276"
+       y="69.173607"
+       id="text3742-7-8-9"><tspan
+         sodipodi:role="line"
+         id="tspan3740-5-3-6"
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#0f0f0f;fill-opacity:1;stroke:none;stroke-width:0.264583"
+         x="105.28276"
+         y="69.173607">TACGCT</tspan></text>
+    <g
+       id="g68884"
+       transform="translate(0,0.17674213)">
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 106.24026,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 108.15177,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 110.06328,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-4" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 111.9702,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-0" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 113.88171,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-6" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 115.79322,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-4-2" />
+    </g>
+    <g
+       id="g68884-9"
+       transform="translate(22.603847,0.17674213)">
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 106.24026,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-9" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 108.15177,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-0" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 110.06328,64.871328 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-4-8" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 111.9702,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-0-1" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 113.88171,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-6-3" />
+      <path
+         style="font-size:3.175px;font-family:monospace;-inkscape-font-specification:'monospace, Normal';fill:none;fill-opacity:1;stroke:#aa0000;stroke-width:0.198437;stroke-linecap:square;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+         d="m 115.79322,64.871329 c 0,1.322917 0,1.322917 0,1.322917"
+         id="path67198-84-7-4-2-1" />
+    </g>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#02740d;stroke-width:0.198437;stroke-linecap:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 105.64872,61.696332 h 10.84792 l -3.96875,-0.79375"
+       id="path72490"
+       sodipodi:nodetypes="ccc" />
+    <path
+       style="fill:none;fill-opacity:1;stroke:#02740d;stroke-width:0.198437;stroke-linecap:round;stroke-miterlimit:10;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:stroke fill markers"
+       d="m 139.02923,69.6163 h -10.84792 l 3.96875,0.79375"
+       id="path72490-1"
+       sodipodi:nodetypes="ccc" />
+  </g>
+</svg>

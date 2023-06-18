@@ -3,4 +3,4 @@ authors = ["Aleksandr Fedorov"]
 language = "en"
 multilingual = false
 src = "src"
-title = "repeto Documentation"
+title = "repeto"

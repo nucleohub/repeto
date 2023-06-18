@@ -1,0 +1,491 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Generator: Adobe Illustrator 26.4.1, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+
+<svg
+   version="1.1"
+   id="Layer_1"
+   x="0px"
+   y="0px"
+   viewBox="0 0 113.52706 21.696518"
+   enable-background="new 0 0 595.28 841.89"
+   xml:space="preserve"
+   sodipodi:docname="IR-notation.svg"
+   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   width="113.52706"
+   height="21.696518"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"><defs
+   id="defs589">
+	
+	
+</defs><sodipodi:namedview
+   id="namedview587"
+   pagecolor="#ffffff"
+   bordercolor="#000000"
+   borderopacity="0.25"
+   inkscape:showpageshadow="2"
+   inkscape:pageopacity="0.0"
+   inkscape:pagecheckerboard="0"
+   inkscape:deskcolor="#d1d1d1"
+   showgrid="true"
+   inkscape:zoom="3.1714775"
+   inkscape:cx="5.0449672"
+   inkscape:cy="-22.544697"
+   inkscape:window-width="1426"
+   inkscape:window-height="936"
+   inkscape:window-x="0"
+   inkscape:window-y="0"
+   inkscape:window-maximized="1"
+   inkscape:current-layer="Layer_1"
+   inkscape:pageshadow="2"
+   fit-margin-top="0"
+   fit-margin-left="0"
+   fit-margin-right="0"
+   fit-margin-bottom="0"><inkscape:grid
+     type="xygrid"
+     id="grid872"
+     originx="-334.65794"
+     originy="-88.633484" /></sodipodi:namedview>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<line
+   fill="#231f20"
+   stroke="#231f20"
+   stroke-width="0.25"
+   stroke-miterlimit="10"
+   x1="40.072071"
+   y1="14.986519"
+   x2="105.84206"
+   y2="14.986519"
+   id="line482" />
+<polygon
+   fill="#e6e6e6"
+   stroke="#000000"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   points="403.78,102.72 398.73,102.72 398.73,103.66 398.73,104.52 403.78,104.52 405.96,103.62 "
+   id="polygon484"
+   transform="translate(-334.65794,-88.633484)" />
+<polygon
+   fill="#e6e6e6"
+   stroke="#000000"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   points="383.45,102.72 373.73,102.72 373.73,103.66 373.73,104.52 383.45,104.52 383.45,103.62 "
+   id="polygon486"
+   transform="translate(-334.65794,-88.633484)" />
+<polygon
+   fill="#e6e6e6"
+   stroke="#000000"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   points="394.4,102.72 384.68,102.72 384.68,103.66 384.68,104.52 394.4,104.52 394.4,103.62 "
+   id="polygon488"
+   transform="translate(-334.65794,-88.633484)" />
+<polygon
+   fill="#e6e6e6"
+   stroke="#000000"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   points="422.14,102.72 427.18,102.72 427.18,103.66 427.18,104.52 422.14,104.52 419.96,103.62 "
+   id="polygon490"
+   transform="translate(-334.65794,-88.633484)" />
+<polygon
+   fill="#e6e6e6"
+   stroke="#000000"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   points="428.45,102.72 448.11,102.72 448.11,103.66 448.11,104.52 428.45,104.52 428.45,103.62 "
+   id="polygon492"
+   transform="translate(-334.65794,-88.633484)" />
+<line
+   fill="#e6e6e6"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="39.072071"
+   y1="13.596519"
+   x2="48.792072"
+   y2="13.596519"
+   id="line494" />
+<line
+   fill="#e6e6e6"
+   stroke="#2b388f"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="50.022053"
+   y1="13.596519"
+   x2="59.742054"
+   y2="13.596519"
+   id="line496" />
+<line
+   fill="#e6e6e6"
+   stroke="#006838"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="64.072067"
+   y1="13.596519"
+   x2="71.302048"
+   y2="13.596519"
+   id="line498" />
+<line
+   fill="#e6e6e6"
+   stroke="#006838"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="85.302048"
+   y1="13.596519"
+   x2="92.522049"
+   y2="13.596519"
+   id="line500" />
+<line
+   fill="#e6e6e6"
+   stroke="#2b388f"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="93.912064"
+   y1="13.596519"
+   x2="103.62206"
+   y2="13.596519"
+   id="line502" />
+<line
+   fill="#e6e6e6"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="103.62206"
+   y1="13.596519"
+   x2="113.34206"
+   y2="13.596519"
+   id="line504" />
+<path
+   fill="none"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   d="M 47.592059,12.556516"
+   id="path506" />
+<line
+   fill="#e6e6e6"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="43.932056"
+   y1="13.596519"
+   x2="43.932056"
+   y2="3.8765182"
+   id="line508" />
+<line
+   fill="#e6e6e6"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   x1="43.932056"
+   y1="3.8765182"
+   x2="108.48207"
+   y2="3.8765182"
+   id="line510" />
+<line
+   fill="#e6e6e6"
+   stroke="#be1e2d"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="108.48207"
+   y1="13.596519"
+   x2="108.48207"
+   y2="3.8765182"
+   id="line512" />
+<line
+   fill="#e6e6e6"
+   stroke="#2b388f"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="54.83205"
+   y1="13.596519"
+   x2="54.83205"
+   y2="6.8765182"
+   id="line514" />
+<line
+   fill="#e6e6e6"
+   stroke="#2b388f"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="98.76207"
+   y1="13.596519"
+   x2="98.76207"
+   y2="6.8765182"
+   id="line516" />
+<line
+   fill="#e6e6e6"
+   stroke="#2e3191"
+   stroke-width="0.35"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   x1="54.83205"
+   y1="6.8765182"
+   x2="98.76207"
+   y2="6.8765182"
+   id="line518" />
+<line
+   fill="#e6e6e6"
+   stroke="#006838"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="67.692062"
+   y1="13.596519"
+   x2="67.692062"
+   y2="9.8765182"
+   id="line520" />
+<line
+   fill="#e6e6e6"
+   stroke="#006838"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="88.912064"
+   y1="13.596519"
+   x2="88.912064"
+   y2="9.8765182"
+   id="line522" />
+<line
+   fill="#e6e6e6"
+   stroke="#006838"
+   stroke-width="0.35"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   x1="67.692062"
+   y1="9.8765182"
+   x2="88.912064"
+   y2="9.8765182"
+   id="line524" />
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="6px"
+   id="text526"
+   x="2.9195991"
+   y="17.234615"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.33333px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">Inv. Repeat</text><text
+   font-family="TimesNewRomanPSMT"
+   font-size="6px"
+   id="text528"
+   x="27.526371"
+   y="11.487518"
+   style="-inkscape-font-specification:'sans-serif, Normal';font-family:sans-serif;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:5.33333333px;font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">IR</text>
+<line
+   fill="#e6e6e6"
+   stroke="#231f20"
+   stroke-width="0.35"
+   stroke-miterlimit="10"
+   x1="36.072071"
+   y1="21.696518"
+   x2="36.072071"
+   y2="3.8765182"
+   id="line532" />
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="4px"
+   id="text534"
+   x="65.244781"
+   y="2.9160156"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">IR segments</text>
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="3px"
+   id="text536"
+   x="39.100075"
+   y="6.3572798"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">(1)</text>
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="3px"
+   id="text538"
+   x="50.000069"
+   y="9.3572798"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">(2)</text>
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="3px"
+   id="text540"
+   x="62.860081"
+   y="12.35728"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">(3)</text>
+<g
+   id="g560"
+   transform="translate(-334.65794,-88.633484)">
+	<line
+   fill="#e6e6e6"
+   x1="373.73001"
+   y1="106.02"
+   x2="405.95999"
+   y2="106.02"
+   id="line542" />
+	<g
+   id="g558">
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   x1="374.95999"
+   y1="106.02"
+   x2="375.45999"
+   y2="106.02"
+   id="line544" />
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   stroke-dasharray="0.9925, 0.9925"
+   x1="376.45001"
+   y1="106.02"
+   x2="403.73999"
+   y2="106.02"
+   id="line546" />
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   x1="404.23999"
+   y1="106.02"
+   x2="404.73999"
+   y2="106.02"
+   id="line548" />
+		<g
+   id="g552">
+			<path
+   fill="#6d6e70"
+   d="m 375.23,106.02 0.33,-0.54 -0.02,-0.01 -0.88,0.35 c -0.31,0.07 -0.61,0.14 -0.92,0.2 0.31,0.07 0.61,0.14 0.92,0.2 l 0.88,0.35 0.02,-0.01 z"
+   id="path550" />
+		</g>
+		<g
+   id="g556">
+			<path
+   fill="#6d6e70"
+   d="m 404.47,106.02 -0.33,-0.54 0.02,-0.01 0.88,0.35 c 0.31,0.07 0.61,0.14 0.92,0.2 -0.31,0.07 -0.61,0.14 -0.92,0.2 l -0.88,0.35 -0.02,-0.01 z"
+   id="path554" />
+		</g>
+	</g>
+</g>
+<g
+   id="g580"
+   transform="translate(-334.65794,-88.633484)">
+	<line
+   fill="#e6e6e6"
+   x1="419.95999"
+   y1="106.02"
+   x2="448.10999"
+   y2="106.02"
+   id="line562" />
+	<g
+   id="g578">
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   x1="421.17999"
+   y1="106.02"
+   x2="421.67999"
+   y2="106.02"
+   id="line564" />
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   stroke-dasharray="0.9885, 0.9885"
+   x1="422.67001"
+   y1="106.02"
+   x2="445.89999"
+   y2="106.02"
+   id="line566" />
+		
+			<line
+   fill="none"
+   stroke="#6d6e70"
+   stroke-width="0.15"
+   stroke-miterlimit="10"
+   x1="446.39001"
+   y1="106.02"
+   x2="446.89001"
+   y2="106.02"
+   id="line568" />
+		<g
+   id="g572">
+			<path
+   fill="#6d6e70"
+   d="m 421.45,106.02 0.33,-0.54 -0.02,-0.01 -0.88,0.35 c -0.31,0.07 -0.61,0.14 -0.92,0.2 0.31,0.07 0.61,0.14 0.92,0.2 l 0.88,0.35 0.02,-0.01 z"
+   id="path570" />
+		</g>
+		<g
+   id="g576">
+			<path
+   fill="#6d6e70"
+   d="m 446.62,106.02 -0.33,-0.54 0.02,-0.01 0.88,0.35 c 0.31,0.07 0.61,0.14 0.92,0.2 -0.31,0.07 -0.61,0.14 -0.92,0.2 l -0.88,0.35 -0.02,-0.01 z"
+   id="path574" />
+		</g>
+	</g>
+</g>
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="4px"
+   id="text582"
+   x="46.161919"
+   y="20.864487"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">left blocks</text>
+<text
+   font-family="TimesNewRomanPSMT"
+   font-size="4px"
+   id="text584"
+   x="89.080421"
+   y="20.864487"
+   style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.5px;font-family:sans-serif;-inkscape-font-specification:'sans-serif, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal">right blocks</text>
+</svg>
