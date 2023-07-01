@@ -1,6 +1,6 @@
-pub mod inv;
+use num::traits::{NumAssign, PrimInt};
 
-use num::traits::{PrimInt, NumAssign};
+pub mod inv;
 
 pub trait Coordinate: PrimInt + NumAssign {}
 

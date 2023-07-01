@@ -1,25 +1,26 @@
 use std::borrow::Borrow;
 
+use num::traits::PrimInt;
+
 use super::repeats::inv;
 
 mod dynprog;
 mod index;
 mod trace;
 
-pub type Score = i32;
-
-pub fn run<'a, 'b, Idx, T>(ir: &'a [T], scores: &'b [Score]) -> (Vec<&'a T>, Score)
+pub fn run<Idx, IR, Score>(ir: &[IR], scores: &[Score]) -> (Vec<usize>, Score)
     where
         Idx: inv::Coordinate,
-        T: Borrow<inv::Repeat<Idx>>
+        IR: Borrow<inv::Repeat<Idx>>,
+        Score: PrimInt
 {
     assert_eq!(ir.len(), scores.len());
 
     // Trivial solutions
-    if ir.is_empty() || (ir.len() == 1 && scores[0] == 0) {
-        return (vec![], 0);
-    } else if ir.len() == 1 && scores[0] > 0 {
-        return (vec![&ir[0]], scores[0]);
+    if ir.is_empty() || (ir.len() == 1 && scores[0].is_zero()) {
+        return (vec![], Score::zero());
+    } else if ir.len() == 1 && scores[0] > Score::zero() {
+        return (vec![0], scores[0]);
     }
 
     dynprog::DynProgSolution::new().solve(ir, scores)
@@ -32,6 +33,8 @@ mod tests {
     use itertools::Itertools;
 
     use super::*;
+
+    pub type Score = i32;
 
     #[derive(Debug)]
     struct TestCase {
@@ -51,7 +54,8 @@ mod tests {
         }
 
         let expscore = tcase.expdsrna.iter().map(|x| scores[*x]).sum();
-        let (mut result, score) = run(&transformed, &scores);
+        let (result, score) = run(&transformed, &scores);
+        let mut result = result.into_iter().map(|x| &transformed[x]).collect_vec();
         debug_assert!(score == expscore, "{msg}\nScore: {expscore} vs {score}");
 
         let mut expected = tcase

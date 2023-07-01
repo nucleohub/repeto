@@ -37,11 +37,11 @@ impl<Idx: Coordinate> Segment<Idx> {
     fn brange(&self) -> Range<Idx> { self.left().start..self.right().end }
 
     fn shift(&mut self, shift: &Idx) {
-        self.left.start = self.left.start + *shift;
-        self.left.end = self.left.end + *shift;
+        self.left.start += *shift;
+        self.left.end += *shift;
 
-        self.right.start = self.right.start + *shift;
-        self.right.end = self.right.end + *shift;
+        self.right.start += *shift;
+        self.right.end += *shift;
     }
 }
 

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use pyo3::prelude::*;
 
 use repeats::{InvertedRepeat, Range, RepeatSegment};
@@ -13,23 +14,27 @@ pub fn predict(seq: &[u8], min_score: i64, min_matches_run: usize) -> PyResult<(
     let ir = Python::with_gil(|py| -> PyResult<Vec<InvertedRepeat>>{
         ir.into_iter().map(|ir| InvertedRepeat::from_rs(&ir, py)).collect()
     })?;
+
     Ok((ir, scores))
 }
 
 
 #[pyfunction]
-pub fn optimize(ir: Vec<InvertedRepeat>, scores: Vec<i32>) -> PyResult<(Vec<InvertedRepeat>, i32)> {
-    let ir = Python::with_gil(|py| -> Vec<repeto::repeats::inv::Repeat<isize>> {
-        ir.into_iter().map(|x| { x.to_rs(py) }).collect()
+pub fn optimize(ir: Vec<Py<InvertedRepeat>>, scores: Vec<i64>) -> PyResult<(Vec<Py<InvertedRepeat>>, i64)> {
+    // Transform to an optimized Rust representation
+    let rs_ir = Python::with_gil(|py| -> Vec<repeto::repeats::inv::Repeat<isize>> {
+        ir.iter().map(|x| { x.borrow(py).to_rs(py) }).collect()
     });
 
-    let (ir, total_score) = repeto::optimize::run(&ir, &scores);
+    // Run the solution
+    let (solution, total_score) = repeto::optimize::run(&rs_ir, &scores);
 
-    let ir = Python::with_gil(|py| -> PyResult<Vec<InvertedRepeat>> {
-        ir.into_iter().map(
-            |x| InvertedRepeat::from_rs(x, py)
-        ).collect()
-    })?;
+    // Shallow copy solution repeats
+    let ir = Python::with_gil(|py| {
+        solution.into_iter().map(|x| ir[x].clone_ref(py)).collect_vec()
+    });
+
+    // Return the result
     return Ok((ir, total_score));
 }
 

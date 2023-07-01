@@ -3,10 +3,10 @@ use std::collections::BTreeMap;
 use std::ops::Range;
 
 use itertools::Itertools;
+use num::traits::PrimInt;
 
 use super::{index, trace};
 use super::inv;
-use super::Score;
 use super::trace::TraceCell;
 
 // General rules:
@@ -19,22 +19,23 @@ use super::trace::TraceCell;
 // * f(s, e - 1)
 // * max of the following:
 //   * f(s, start(RNA)) + weight(RNA) + sum[f(start(gap_i), end(gap_i)) for all gaps in RNA where end(RNA) == e]
-struct Workload<'a, Idx, T>
+struct Workload<'a, Idx, IR, Score>
     where
         Idx: inv::Coordinate,
-        T: Borrow<inv::Repeat<Idx>>
+        IR: Borrow<inv::Repeat<Idx>>,
+        Score: PrimInt
 {
     pub index: index::Index<Idx>,
-    pub invrep: &'a [T],
+    pub invrep: &'a [IR],
     pub scores: &'a [Score],
 }
 
-pub struct DynProgSolution {
+pub struct DynProgSolution<Score: PrimInt> {
     pub tracer: trace::Tracer,
     pub cache: Vec<BTreeMap<usize, Score>>,
 }
 
-impl DynProgSolution {
+impl<Score: PrimInt> DynProgSolution<Score> {
     pub fn new() -> Self {
         Self {
             tracer: trace::Tracer::new(0, 0),
@@ -42,9 +43,9 @@ impl DynProgSolution {
         }
     }
 
-    pub fn solve<'a, 'b, Idx, T>(
-        &mut self, invrep: &'a [T], scores: &'b [Score],
-    ) -> (Vec<&'a T>, Score)
+    pub fn solve<Idx, T>(
+        &mut self, invrep: &[T], scores: &[Score],
+    ) -> (Vec<usize>, Score)
         where
             Idx: inv::Coordinate,
             T: Borrow<inv::Repeat<Idx>>
@@ -69,25 +70,21 @@ impl DynProgSolution {
         let score = self.subsolve(&w, 0, w.index.ends().len() - 1);
         let optimum = self
             .tracer
-            .trace(0, w.index.ends().len() - 1)
-            .into_iter()
-            .map(|x| &invrep[x])
-            .collect();
-
+            .trace(0, w.index.ends().len() - 1);
         (optimum, score)
     }
 
-    fn subsolve<Idx, T>(&mut self, w: &Workload<Idx, T>, sind: usize, eind: usize) -> Score
+    fn subsolve<Idx, IR>(&mut self, w: &Workload<Idx, IR, Score>, sind: usize, eind: usize) -> Score
         where
             Idx: inv::Coordinate,
-            T: Borrow<inv::Repeat<Idx>>
+            IR: Borrow<inv::Repeat<Idx>>
     {
         // Sanity check
         debug_assert!(sind <= w.index.starts().len() && eind <= w.index.ends().len());
 
         // Prevent recursion for incorrect intervals
         if w.index.starts()[sind].pos >= w.index.ends()[eind].pos {
-            return Score::default();
+            return Score::zero();
         }
 
         // Cached lookup
@@ -101,7 +98,7 @@ impl DynProgSolution {
         // * We skip the current end <- the best option is to use the previous end
         if eind > 0 {
             let score = self.subsolve(w, sind, eind - 1);
-            if score > 0 {
+            if score > Score::zero() {
                 bestt = Some((
                     trace::TraceCell {
                         rnaid: None,
@@ -133,7 +130,7 @@ impl DynProgSolution {
 
             // Include the best combination of 'embeddable' RNAs
             let (gscore, mut trace) = self.gapsolve(w, w.index.blocks(rnaid), rnasind, rnaeind);
-            score += gscore;
+            score = score + gscore;
 
             // Find the closest end that doesn't contain the current rnafold
             let mut preeind = index::bisect::right(w.index.ends(), rna.borrow().brange().start, 0, eind);
@@ -144,14 +141,14 @@ impl DynProgSolution {
                 // Can we include it?
                 if w.index.ends()[preeind].pos > w.index.starts()[sind].pos {
                     let pscore = self.subsolve(w, sind, preeind);
-                    if pscore > 0 {
-                        score += pscore;
+                    if pscore > Score::zero() {
+                        score = score + pscore;
                         trace.push((sind, preeind));
                     }
                 }
             }
 
-            if score > 0 && (bestt.is_none() || bestt.as_ref().unwrap().1 < score) {
+            if score > Score::zero() && (bestt.is_none() || bestt.as_ref().unwrap().1 < score) {
                 bestt = Some((
                     TraceCell {
                         rnaid: Some(rnaid),
@@ -165,8 +162,8 @@ impl DynProgSolution {
         return match bestt {
             None => {
                 // No traces scored > 0
-                self.cache[sind].insert(eind, 0);
-                0
+                self.cache[sind].insert(eind, Score::zero());
+                Score::zero()
             }
             Some(bestt) => {
                 self.tracer.update(sind, eind, bestt.0);
@@ -176,22 +173,22 @@ impl DynProgSolution {
         };
     }
 
-    fn gapsolve<Idx, T>(
+    fn gapsolve<Idx, IR>(
         &mut self,
-        w: &Workload<Idx, T>,
+        w: &Workload<Idx, IR, Score>,
         blocks: &[Range<Idx>],
         mut minsind: usize,
         maxeind: usize,
     ) -> (Score, Vec<(usize, usize)>)
         where
             Idx: inv::Coordinate,
-            T: Borrow<inv::Repeat<Idx>>
+            IR: Borrow<inv::Repeat<Idx>>
     {
         // Blocks are sorted and for each start-end gap between adjacent blocks we need to find
         // the best possible sind/eind so that: minsind < start(sind) <= start < end <= end(eind) < maxend
 
         let mut traces = Vec::new();
-        let (mut score, mut minend) = (0, 0);
+        let (mut score, mut minend) = (Score::zero(), 0);
 
         for (prv, nxt) in blocks.iter().tuple_windows() {
             debug_assert!(prv.end <= nxt.start);
@@ -227,8 +224,8 @@ impl DynProgSolution {
 
             // Find the best combination
             let addition = self.subsolve(w, sind, eind);
-            if addition > 0 {
-                score += addition;
+            if addition > Score::zero() {
+                score = score + addition;
                 traces.push((sind, eind));
             }
 
@@ -238,7 +235,9 @@ impl DynProgSolution {
             minsind = sind;
             minend = eind;
         }
-        debug_assert!(score == 0 && traces.len() == 0 || score > 0 && traces.len() > 0);
+        debug_assert!(
+            score.is_zero() && traces.len() == 0 || score > Score::zero() && traces.len() > 0
+        );
         (score, traces)
     }
 }
